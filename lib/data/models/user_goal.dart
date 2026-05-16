@@ -77,6 +77,42 @@ class UserGoal {
     createdAt: DateTime.parse(map['created_at'] as String),
   );
 
+  /// Returns an adjusted daily plan based on how far ahead/behind the
+  /// learner is. If `dayNumber` is more than 3 days behind the calendar
+  /// day-of-plan, daily goals scale up by 25%; if 3+ ahead, they ease 20%.
+  AdaptiveDailyPlan adaptiveFor({required int dayNumber, required DateTime now}) {
+    final elapsedDays = now.difference(createdAt).inDays + 1;
+    final delta = elapsedDays - dayNumber; // positive when behind plan
+    double scale = 1.0;
+    if (delta >= 3) scale = 1.25;
+    if (delta <= -3) scale = 0.8;
+    return AdaptiveDailyPlan(
+      kanji: (dailyKanjiGoal * scale).round().clamp(1, 40),
+      vocab: (dailyVocabGoal * scale).round().clamp(1, 100),
+      reviewMinutes: (dailyReviewMinutes * scale).round().clamp(5, 60),
+      behindByDays: delta,
+    );
+  }
+}
+
+class AdaptiveDailyPlan {
+  final int kanji;
+  final int vocab;
+  final int reviewMinutes;
+  final int behindByDays;
+  const AdaptiveDailyPlan({
+    required this.kanji,
+    required this.vocab,
+    required this.reviewMinutes,
+    required this.behindByDays,
+  });
+
+  String get statusLabel {
+    if (behindByDays >= 3) return 'Catching up';
+    if (behindByDays <= -3) return 'Ahead of plan';
+    return 'On track';
+  }
+
   static const _kanjiTotals = {
     'N5': 100,
     'N4': 300,

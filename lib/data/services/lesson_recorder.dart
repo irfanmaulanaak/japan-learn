@@ -80,11 +80,8 @@ class LessonRecorder {
     return progress.values.every((p) => p.isMastered);
   }
 
-  Future<int> _masteredCount(String deck) async {
-    final rows = await _cardProgress.byDeckIds(deck: deck, itemIds: []);
-    // Repository requires ids; fetch directly via raw query helper.
-    return rows.values.where((p) => p.state.isMastered).length;
-  }
+  Future<int> _masteredCount(String deck) =>
+      _cardProgress.masteredCount(deck);
 
   int _countModulesDone({
     required bool hiraDone,

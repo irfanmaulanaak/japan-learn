@@ -19,6 +19,7 @@ import 'repositories/kanji_repository.dart';
 import 'repositories/user_goal_repository.dart';
 import 'repositories/user_progress_repository.dart';
 import 'repositories/vocabulary_repository.dart';
+import 'services/lesson_recorder.dart';
 
 final databaseHelperProvider = Provider<DatabaseHelper>((ref) {
   return DatabaseHelper.instance;
@@ -58,6 +59,16 @@ final bookmarkRepositoryProvider = Provider<BookmarkRepository>((ref) {
 
 final badgeRepositoryProvider = Provider<BadgeRepository>((ref) {
   return BadgeRepository(ref.watch(databaseHelperProvider));
+});
+
+final lessonRecorderProvider = Provider<LessonRecorder>((ref) {
+  return LessonRecorder(
+    userProgress: ref.watch(userProgressRepositoryProvider),
+    badges: ref.watch(badgeRepositoryProvider),
+    cardProgress: ref.watch(cardProgressRepositoryProvider),
+    kanaProgress: ref.watch(kanaProgressRepositoryProvider),
+    kana: ref.watch(kanaRepositoryProvider),
+  );
 });
 
 final userGoalProvider = FutureProvider<UserGoal?>((ref) {

@@ -3,17 +3,37 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/kana.dart';
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
-import '../kana/hiragana_screen.dart';
+import '../jlpt_mock/jlpt_mock_screen.dart';
+import '../kana/kana_module_screen.dart';
+import '../kanji/kanji_screen.dart';
+import '../reading/reading_screen.dart';
+import '../shadowing/shadowing_screen.dart';
+import '../vocabulary/vocabulary_screen.dart';
 
 class LearnScreen extends ConsumerWidget {
   const LearnScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hiraganaAsync = ref.watch(hiraganaListProvider);
-    final hiraganaCount = hiraganaAsync.maybeWhen(data: (l) => l.length, orElse: () => 0);
+    final hira = ref.watch(hiraganaListProvider).maybeWhen(
+          data: (l) => l.length,
+          orElse: () => 0,
+        );
+    final kata = ref.watch(katakanaListProvider).maybeWhen(
+          data: (l) => l.length,
+          orElse: () => 0,
+        );
+    final vocab = ref.watch(vocabularyListProvider).maybeWhen(
+          data: (l) => l.length,
+          orElse: () => 0,
+        );
+    final kanji = ref.watch(kanjiListProvider).maybeWhen(
+          data: (l) => l.length,
+          orElse: () => 0,
+        );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Learn')),
@@ -22,45 +42,80 @@ class LearnScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
           children: [
-            const _SectionLabel('Modules'),
+            const _SectionLabel('Core modules'),
             const SizedBox(height: 12),
             _ModuleRow(
               kanji: 'あ',
               tint: AppColors.accentTint,
               title: 'Hiragana',
-              meta: '$hiraganaCount characters',
-              status: _ModuleStatus.ready,
-              onTap: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const HiraganaScreen()),
+              meta: '$hira characters',
+              onTap: () => _open(
+                context,
+                const KanaModuleScreen(type: Kana.typeHiragana),
               ),
             ),
-            const _ModuleDivider(),
-            const _ModuleRow(
+            const _Divider(),
+            _ModuleRow(
               kanji: 'ア',
               tint: AppColors.tintSky,
               title: 'Katakana',
-              meta: '46 characters',
-              status: _ModuleStatus.locked,
+              meta: '$kata characters',
+              onTap: () => _open(
+                context,
+                const KanaModuleScreen(type: Kana.typeKatakana),
+              ),
             ),
-            const _ModuleDivider(),
-            const _ModuleRow(
+            const _Divider(),
+            _ModuleRow(
               kanji: '漢',
               tint: AppColors.tintSage,
               title: 'Kanji',
-              meta: 'by radical',
-              status: _ModuleStatus.locked,
+              meta: '$kanji kanji · by radical',
+              onTap: () => _open(context, const KanjiScreen()),
             ),
-            const _ModuleDivider(),
-            const _ModuleRow(
+            const _Divider(),
+            _ModuleRow(
               kanji: '語',
               tint: AppColors.tintLavender,
               title: 'Vocabulary',
-              meta: 'JLPT graded',
-              status: _ModuleStatus.locked,
+              meta: '$vocab JLPT-graded words',
+              onTap: () => _open(context, const VocabularyScreen()),
+            ),
+            const SizedBox(height: 28),
+            const _SectionLabel('Practice'),
+            const SizedBox(height: 12),
+            _ModuleRow(
+              kanji: '読',
+              tint: AppColors.tintSage,
+              title: 'Reading',
+              meta: 'Graded passages',
+              onTap: () => _open(context, const ReadingScreen()),
+            ),
+            const _Divider(),
+            _ModuleRow(
+              kanji: '話',
+              tint: AppColors.accentTint,
+              title: 'Shadowing',
+              meta: 'Speak it out loud',
+              onTap: () => _open(context, const ShadowingScreen()),
+            ),
+            const _Divider(),
+            _ModuleRow(
+              kanji: '試',
+              tint: AppColors.tintSky,
+              title: 'JLPT mock test',
+              meta: 'N5 · timed',
+              onTap: () => _open(context, const JlptMockScreen()),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  void _open(BuildContext context, Widget screen) {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => screen),
     );
   }
 }
@@ -86,8 +141,8 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _ModuleDivider extends StatelessWidget {
-  const _ModuleDivider();
+class _Divider extends StatelessWidget {
+  const _Divider();
 
   @override
   Widget build(BuildContext context) {
@@ -99,37 +154,30 @@ class _ModuleDivider extends StatelessWidget {
   }
 }
 
-enum _ModuleStatus { ready, inProgress, locked }
-
 class _ModuleRow extends StatelessWidget {
   final String kanji;
   final Color tint;
   final String title;
   final String meta;
-  final _ModuleStatus status;
-  final VoidCallback? onTap;
+  final VoidCallback onTap;
   const _ModuleRow({
     required this.kanji,
     required this.tint,
     required this.title,
     required this.meta,
-    required this.status,
-    this.onTap,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final locked = status == _ModuleStatus.locked;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: locked
-            ? null
-            : () {
-                HapticFeedback.lightImpact();
-                onTap?.call();
-              },
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
           child: Row(
@@ -138,16 +186,16 @@ class _ModuleRow extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: locked ? AppColors.hairline : tint,
+                  color: tint,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   kanji,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 26,
                     fontWeight: FontWeight.w800,
-                    color: locked ? AppColors.inkMuted : AppColors.ink,
+                    color: AppColors.ink,
                   ),
                 ),
               ),
@@ -158,11 +206,11 @@ class _ModuleRow extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.2,
-                        color: locked ? AppColors.inkMuted : AppColors.ink,
+                        color: AppColors.ink,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -177,32 +225,18 @@ class _ModuleRow extends StatelessWidget {
                   ],
                 ),
               ),
-              _ModuleStatusBadge(status: status),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                size: 20,
+                color: AppColors.ink,
+              ),
             ],
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 280.ms).slideY(begin: 0.03, end: 0, duration: 320.ms, curve: Curves.easeOutCubic);
-  }
-}
-
-class _ModuleStatusBadge extends StatelessWidget {
-  final _ModuleStatus status;
-  const _ModuleStatusBadge({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    switch (status) {
-      case _ModuleStatus.locked:
-        return const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.inkMuted);
-      case _ModuleStatus.ready:
-        return const Icon(Icons.arrow_forward_rounded, size: 20, color: AppColors.ink);
-      case _ModuleStatus.inProgress:
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
-        );
-    }
+    )
+        .animate()
+        .fadeIn(duration: 280.ms)
+        .slideY(begin: 0.03, end: 0, duration: 320.ms, curve: Curves.easeOutCubic);
   }
 }

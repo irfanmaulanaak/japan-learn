@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/badge.dart';
 import '../../data/models/kana.dart';
 import '../../data/models/kana_progress.dart';
 import '../../data/providers.dart';
@@ -68,14 +69,27 @@ class _Content extends ConsumerWidget {
       await ref
           .read(kanaProgressRepositoryProvider)
           .save(current.review(correct: correct, now: DateTime.now()));
-      await ref
-          .read(userProgressRepositoryProvider)
-          .recordStudy(xpEarned: correct ? 5 : 1);
+      final granted = await ref
+          .read(lessonRecorderProvider)
+          .recordReview(xpEarned: correct ? 5 : 1);
       ref.invalidate(
         isHira ? hiraganaProgressProvider : katakanaProgressProvider,
       );
       ref.invalidate(userProgressProvider);
       ref.invalidate(reviewDueCountProvider);
+      ref.invalidate(earnedBadgesProvider);
+      if (granted.isNotEmpty && context.mounted) {
+        for (final code in granted) {
+          final def = BadgeCatalog.byCode(code);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: AppColors.ink,
+              content: Text('Badge unlocked: ${def.title}'),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      }
     }
 
     return DefaultTabController(

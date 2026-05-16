@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/kana.dart';
 import '../../data/models/user_goal.dart';
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
-import '../kana/hiragana_screen.dart';
+import '../kana/kana_module_screen.dart';
+import '../review/review_hub_screen.dart';
+import '../vocabulary/vocabulary_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -16,22 +19,35 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  void _startDaily() {
+  void _startDaily(UserGoal goal) {
     HapticFeedback.lightImpact();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const HiraganaScreen()),
-    );
+    final next = _nextRecommendedScreen(goal);
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => next));
   }
 
   void _startReview() {
     HapticFeedback.lightImpact();
-    // TODO: route into SRS review.
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ReviewHubScreen()),
+    );
+  }
+
+  Widget _nextRecommendedScreen(UserGoal goal) {
+    switch (goal.startingPoint) {
+      case 'Know hiragana':
+        return const KanaModuleScreen(type: Kana.typeKatakana);
+      case 'Some kanji':
+      case 'Returning learner':
+        return const VocabularyScreen();
+    }
+    return const KanaModuleScreen(type: Kana.typeHiragana);
   }
 
   @override
   Widget build(BuildContext context) {
     final goalAsync = ref.watch(userGoalProvider);
     final progressAsync = ref.watch(userProgressProvider);
+    final reviewDueAsync = ref.watch(reviewDueCountProvider);
 
     if (goalAsync.hasError) return _HomeError(error: goalAsync.error!);
     if (progressAsync.hasError) return _HomeError(error: progressAsync.error!);
@@ -40,11 +56,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final progress = progressAsync.value;
     if (goal == null || progress == null) return const _HomeLoading();
 
-    final todayTotal = goal.dailyVocabGoal + goal.dailyKanjiGoal;
+    final adaptive = goal.adaptiveFor(
+      dayNumber: progress.dayNumber,
+      now: DateTime.now(),
+    );
+    final todayTotal = adaptive.vocab + adaptive.kanji;
     final todayDone = progress.todayDone.clamp(0, todayTotal).toInt();
     final goalDayTotal = goal.timelineMonths * 30;
     final goalDayCurrent = progress.dayNumber.clamp(1, goalDayTotal).toInt();
     final todayWeekIndex = DateTime.now().weekday - 1;
+    final reviewDue = reviewDueAsync.maybeWhen(
+      data: (n) => n,
+      orElse: () => progress.reviewDue,
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -61,10 +85,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 28),
             _DailyHero(
-              title: _todayPlanTitle(goal),
+              title: '${adaptive.vocab} vocab + ${adaptive.kanji} kanji',
+              subtitle: adaptive.statusLabel,
               done: todayDone,
               total: todayTotal,
-              onTap: _startDaily,
+              onTap: () => _startDaily(goal),
             ),
             const SizedBox(height: 36),
             const _SectionLabel('This week'),
@@ -80,20 +105,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               dayTotal: goalDayTotal,
               currentStageIndex: _stageIndexFor(goal.startingPoint),
             ),
-            if (progress.reviewDue > 0) ...[
+            if (reviewDue > 0) ...[
               const SizedBox(height: 28),
               const _SectionLabel('Review'),
               const SizedBox(height: 12),
-              _ReviewCard(due: progress.reviewDue, onTap: _startReview),
+              _ReviewCard(due: reviewDue, onTap: _startReview),
             ],
           ],
         ),
       ),
     );
-  }
-
-  String _todayPlanTitle(UserGoal goal) {
-    return '${goal.dailyVocabGoal} vocab + ${goal.dailyKanjiGoal} kanji';
   }
 
   String _targetMonth(UserGoal goal) {
@@ -304,11 +325,13 @@ class _BigStat extends StatelessWidget {
 
 class _DailyHero extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final int done;
   final int total;
   final VoidCallback onTap;
   const _DailyHero({
     required this.title,
+    this.subtitle,
     required this.done,
     required this.total,
     required this.onTap,
@@ -339,7 +362,7 @@ class _DailyHero extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'TODAY',
+                (subtitle ?? 'TODAY').toUpperCase(),
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 11,
