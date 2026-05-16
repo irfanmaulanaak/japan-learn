@@ -17,6 +17,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] SQLite database helper (`lib/data/database/database_helper.dart`)
 - [x] Kana model + repository (`lib/data/models/kana.dart`, `lib/data/repositories/kana_repository.dart`)
 - [x] Hiragana seed — 46 characters loaded on first launch (`lib/data/seed/kana_seed.dart`)
+- [x] Kana SRS progress table + repository (`lib/data/models/kana_progress.dart`, `lib/data/repositories/kana_progress_repository.dart`)
 - [x] Riverpod providers for kana lists (`lib/data/providers.dart`)
 - [x] User goal table + repository (`lib/data/models/user_goal.dart`, `lib/data/repositories/user_goal_repository.dart`)
 - [x] User progress table + repository (`lib/data/models/user_progress.dart`, `lib/data/repositories/user_progress_repository.dart`)
@@ -51,6 +52,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 ### Learn tab (UI complete, data mocked)
 - [x] Module list — Hiragana / Katakana / Kanji / Vocabulary
 - [x] Hiragana shows real seed count from DB
+- [x] Hiragana row opens the real module
 - [x] Locked state with lock icon
 - [x] Hairline row separators
 
@@ -69,24 +71,29 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] Persisted goal to `user_goal`
 - [x] First-launch gate shows onboarding when no `user_goal` row exists
 
+### Hiragana module
+- [x] Browse all 46 hiragana in a grid
+- [x] Flashcard study mode (kana → romaji)
+- [x] Quiz mode alternating kana → romaji and romaji → kana
+- [x] Per-character SRS state tracking
+- [x] Today's lesson routes to Hiragana
+- [x] Correct/wrong answers update XP and today progress
+
 ## Mocked / placeholder
 These still need real learning flows or content behind them.
 
 - Progress values now persist, but stay at initial defaults until lessons update them
-- Learn tab module lock/progress state is still mostly static
+- Learn tab module lock/progress state is still mostly static beyond opening Hiragana
 - Recent activity is hidden until real lesson activity exists
 
 ## Next up
 
-### 1. Hiragana learning module (first real feature)
-- Browse all 46 in a grid
-- Flashcard study mode (character → romaji)
-- Quiz mode (kana → romaji, romaji → kana)
-- Per-character SRS state tracking (SM-2)
-- "Today's lesson" routes here
+### 1. Katakana module
+- Seed katakana data
+- Reuse the Hiragana module pattern for browse / flashcard / quiz
+- Track per-character SRS state
 
 ### Later (per PLAN.md)
-- Katakana (same pattern as hiragana)
 - Kanji by radicals
 - Vocabulary
 - Offline dictionary
@@ -109,14 +116,17 @@ lib/
 │   ├── providers.dart               — Riverpod providers
 │   ├── database/database_helper.dart
 │   ├── models/kana.dart
+│   ├── models/kana_progress.dart
 │   ├── models/user_goal.dart
 │   ├── models/user_progress.dart
+│   ├── repositories/kana_progress_repository.dart
 │   ├── repositories/kana_repository.dart
 │   ├── repositories/user_goal_repository.dart
 │   ├── repositories/user_progress_repository.dart
 │   └── seed/kana_seed.dart
 └── features/
     ├── home/home_screen.dart        — dashboard (greeting / stats / today / week / goal / review / recent)
+    ├── kana/                        — Hiragana browse / flashcard / quiz
     ├── learn/learn_screen.dart      — module list
     ├── dictionary/dictionary_screen.dart  — placeholder
     └── profile/profile_screen.dart  — placeholder

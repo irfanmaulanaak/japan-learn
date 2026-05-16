@@ -12,7 +12,7 @@ class UserProgressRepository {
     final rows = await db.query('user_progress', orderBy: 'id ASC', limit: 1);
     if (rows.isNotEmpty) return UserProgress.fromMap(rows.first);
 
-    final progress = UserProgress.initial(now: DateTime.now().toUtc());
+    final progress = UserProgress.initial(now: DateTime.now());
     await save(progress);
     return progress;
   }
@@ -24,5 +24,12 @@ class UserProgressRepository {
       progress.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
+  }
+
+  Future<UserProgress> recordStudy({required int xpEarned}) async {
+    final progress = await currentOrCreate();
+    final next = progress.recordStudy(now: DateTime.now(), xpEarned: xpEarned);
+    await save(next);
+    return next;
   }
 }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
+import '../kana/hiragana_screen.dart';
 
 class LearnScreen extends ConsumerWidget {
   const LearnScreen({super.key});
@@ -29,6 +30,9 @@ class LearnScreen extends ConsumerWidget {
               title: 'Hiragana',
               meta: '$hiraganaCount characters',
               status: _ModuleStatus.ready,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HiraganaScreen()),
+              ),
             ),
             const _ModuleDivider(),
             const _ModuleRow(
@@ -103,12 +107,14 @@ class _ModuleRow extends StatelessWidget {
   final String title;
   final String meta;
   final _ModuleStatus status;
+  final VoidCallback? onTap;
   const _ModuleRow({
     required this.kanji,
     required this.tint,
     required this.title,
     required this.meta,
     required this.status,
+    this.onTap,
   });
 
   @override
@@ -118,7 +124,12 @@ class _ModuleRow extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
-        onTap: locked ? null : () => HapticFeedback.lightImpact(),
+        onTap: locked
+            ? null
+            : () {
+                HapticFeedback.lightImpact();
+                onTap?.call();
+              },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
           child: Row(

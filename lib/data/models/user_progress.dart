@@ -39,6 +39,24 @@ class UserProgress {
     );
   }
 
+  UserProgress recordStudy({required DateTime now, required int xpEarned}) {
+    final days = weekStudyDays;
+    days[now.weekday - 1] = true;
+
+    return UserProgress(
+      id: id,
+      xp: xp + xpEarned,
+      streakCount: streakCount == 0 ? 1 : streakCount,
+      modulesDone: modulesDone,
+      modulesTotal: modulesTotal,
+      dayNumber: dayNumber,
+      todayDone: todayDone + 1,
+      reviewDue: reviewDue,
+      weekMask: days.map((studied) => studied ? '1' : '0').join(),
+      updatedAt: now,
+    );
+  }
+
   List<bool> get weekStudyDays {
     final padded = weekMask.padRight(7, '0');
     return List.generate(7, (i) => padded[i] == '1');

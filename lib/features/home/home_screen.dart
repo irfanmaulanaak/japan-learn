@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/models/user_goal.dart';
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
+import '../kana/hiragana_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _startDaily() {
     HapticFeedback.lightImpact();
-    // TODO: route into today's lesson.
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const HiraganaScreen()),
+    );
   }
 
   void _startReview() {
