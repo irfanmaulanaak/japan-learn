@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_theme.dart';
 import '../features/home/home_screen.dart';
@@ -20,8 +21,8 @@ class _AppShellState extends State<AppShell> {
   static const _tabs = <_TabDef>[
     _TabDef(icon: Icons.home_rounded, label: 'Home'),
     _TabDef(icon: Icons.school_rounded, label: 'Learn'),
-    _TabDef(icon: Icons.menu_book_rounded, label: 'Dictionary'),
-    _TabDef(icon: Icons.person_rounded, label: 'Profile'),
+    _TabDef(icon: Icons.search_rounded, label: 'Dictionary'),
+    _TabDef(icon: Icons.person_rounded, label: 'You'),
   ];
 
   Widget _screenFor(int i) {
@@ -48,22 +49,20 @@ class _AppShellState extends State<AppShell> {
         transitionBuilder: (child, anim) => FadeTransition(
           opacity: anim,
           child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.02),
-              end: Offset.zero,
-            ).animate(anim),
+            position: Tween<Offset>(begin: const Offset(0, 0.02), end: Offset.zero).animate(anim),
             child: child,
           ),
         ),
-        child: KeyedSubtree(
-          key: ValueKey(_index),
-          child: _screenFor(_index),
-        ),
+        child: KeyedSubtree(key: ValueKey(_index), child: _screenFor(_index)),
       ),
       bottomNavigationBar: _BottomNav(
         index: _index,
         tabs: _tabs,
-        onTap: (i) => setState(() => _index = i),
+        onTap: (i) {
+          if (i == _index) return;
+          HapticFeedback.selectionClick();
+          setState(() => _index = i);
+        },
       ),
     );
   }
@@ -84,20 +83,17 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.divider)),
-      ),
+      color: AppColors.bg,
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: List.generate(tabs.length, (i) {
               final selected = i == index;
               return Expanded(
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(14),
                   onTap: () => onTap(i),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 10),
@@ -106,11 +102,11 @@ class _BottomNav extends StatelessWidget {
                       children: [
                         Icon(
                           tabs[i].icon,
-                          color: selected ? AppColors.vermillion : AppColors.inkMuted,
-                          size: 26,
+                          color: selected ? AppColors.ink : AppColors.inkMuted,
+                          size: 24,
                         ).animate(target: selected ? 1 : 0).scale(
                               begin: const Offset(1, 1),
-                              end: const Offset(1.15, 1.15),
+                              end: const Offset(1.1, 1.1),
                               duration: 220.ms,
                               curve: Curves.elasticOut,
                             ),
@@ -120,7 +116,8 @@ class _BottomNav extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: selected ? AppColors.vermillion : AppColors.inkMuted,
+                            color: selected ? AppColors.ink : AppColors.inkMuted,
+                            letterSpacing: -0.1,
                           ),
                         ),
                       ],

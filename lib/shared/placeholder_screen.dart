@@ -5,12 +5,10 @@ import '../theme/app_theme.dart';
 
 class PlaceholderScreen extends StatelessWidget {
   final String title;
-  final String emoji;
   final String subtitle;
   const PlaceholderScreen({
     super.key,
     required this.title,
-    required this.emoji,
     required this.subtitle,
   });
 
@@ -18,35 +16,32 @@ class PlaceholderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      body: Center(
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                emoji,
+                'COMING SOON',
                 style: const TextStyle(
-                  fontSize: 96,
-                  color: AppColors.vermillion,
-                  fontWeight: FontWeight.w900,
+                  color: AppColors.inkMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
                 ),
-              ).animate().scale(
-                    begin: const Offset(0.6, 0.6),
-                    end: const Offset(1, 1),
-                    duration: 500.ms,
-                    curve: Curves.elasticOut,
-                  ),
-              const SizedBox(height: 16),
+              ).animate().fadeIn(duration: 250.ms),
+              const SizedBox(height: 8),
               Text(
                 subtitle,
-                textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: AppColors.inkSoft,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                  color: AppColors.ink,
+                  height: 1.3,
                 ),
-              ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+              ).animate().fadeIn(delay: 80.ms, duration: 300.ms).slideY(begin: 0.04, end: 0),
             ],
           ),
         ),

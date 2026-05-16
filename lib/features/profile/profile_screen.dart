@@ -8,9 +8,8 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const PlaceholderScreen(
-      title: 'Profile',
-      emoji: '私',
-      subtitle: 'Streak, badges, level, settings.',
+      title: 'You',
+      subtitle: 'Streak, badges, level and settings.',
     );
   }
 }

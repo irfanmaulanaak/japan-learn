@@ -9,8 +9,7 @@ class DictionaryScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return const PlaceholderScreen(
       title: 'Dictionary',
-      emoji: '辞',
-      subtitle: 'Offline JP↔EN search lives here.',
+      subtitle: 'Offline Japanese ↔ English search.',
     );
   }
 }

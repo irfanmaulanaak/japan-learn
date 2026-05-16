@@ -1,11 +1,8 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -16,114 +13,79 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _xp = 120;
-  int _streak = 3;
-  int _tapBumpKey = 0;
-  _Feedback? _feedback;
+  // Demo state — wired to real data later.
+  final int _xp = 120;
+  final int _streak = 3;
+  final int _modulesDone = 0;
+  final int _modulesTotal = 4;
+  final int _dayNumber = 3;
+  final int _todayDone = 2;
+  final int _todayTotal = 5;
+  // ● = studied, ○ = not yet, today is index 2 (Wed)
+  final List<bool> _week = const [true, true, false, false, false, false, false];
+  final int _todayWeekIndex = 2;
 
-  void _gainXp() {
+  // Goal mock
+  final String _goalLevel = 'JLPT N5';
+  final String _goalTarget = 'Aug 2026';
+  final int _goalDayCurrent = 12;
+  final int _goalDayTotal = 90;
+
+  // Review queue mock (set to 0 to hide the section)
+  final int _reviewDue = 12;
+
+  // Recent activity mock
+  final List<_Activity> _recent = const [
+    _Activity(title: 'Hiragana  あ–お', xp: 25, when: '2h ago'),
+    _Activity(title: 'Hiragana  か–こ', xp: 25, when: 'yesterday'),
+    _Activity(title: 'Daily quiz', xp: 10, when: '2 days ago'),
+  ];
+
+  void _startDaily() {
     HapticFeedback.lightImpact();
-    setState(() {
-      _xp += 10;
-      _tapBumpKey++;
-    });
+    // TODO: route into today's lesson.
   }
 
-  void _bumpStreak() {
-    HapticFeedback.mediumImpact();
-    setState(() => _streak++);
-  }
-
-  void _correct() {
-    HapticFeedback.mediumImpact();
-    setState(() {
-      _xp += 25;
-      _feedback = _Feedback.correct;
-    });
-  }
-
-  void _wrong() {
-    HapticFeedback.heavyImpact();
-    setState(() => _feedback = _Feedback.wrong);
+  void _startReview() {
+    HapticFeedback.lightImpact();
+    // TODO: route into SRS review.
   }
 
   @override
   Widget build(BuildContext context) {
-    final hiraganaAsync = ref.watch(hiraganaListProvider);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Japan Learn'),
-      ),
       body: SafeArea(
-        child: Stack(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           children: [
-            ListView(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-              children: [
-                _StatRow(
-                  xp: _xp,
-                  streak: _streak,
-                  bumpKey: _tapBumpKey,
-                ),
-                const SizedBox(height: 20),
-                _DailyPlanCard(
-                  hiraganaCount: hiraganaAsync.maybeWhen(
-                    data: (l) => l.length,
-                    orElse: () => 0,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  'Motion preview',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.inkSoft,
-                      ),
-                ),
-                const SizedBox(height: 12),
-                _SpringButton(
-                  label: '+10 XP (tap me)',
-                  color: AppColors.vermillion,
-                  onTap: _gainXp,
-                ),
-                const SizedBox(height: 12),
-                _SpringButton(
-                  label: 'Bump streak 🔥',
-                  color: AppColors.gold,
-                  onTap: _bumpStreak,
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _SpringButton(
-                        label: 'Correct ✓',
-                        color: AppColors.success,
-                        onTap: _correct,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _SpringButton(
-                        label: 'Wrong ✗',
-                        color: AppColors.danger,
-                        onTap: _wrong,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            _Greeting(dayNumber: _dayNumber),
+            const SizedBox(height: 28),
+            _HeroStats(xp: _xp, streak: _streak, done: _modulesDone, total: _modulesTotal),
+            const SizedBox(height: 28),
+            _DailyHero(done: _todayDone, total: _todayTotal, onTap: _startDaily),
+            const SizedBox(height: 36),
+            const _SectionLabel('This week'),
+            const SizedBox(height: 14),
+            _WeekStrip(days: _week, todayIndex: _todayWeekIndex),
+            const SizedBox(height: 36),
+            const _SectionLabel('Goal'),
+            const SizedBox(height: 12),
+            _GoalCard(
+              level: _goalLevel,
+              target: _goalTarget,
+              dayCurrent: _goalDayCurrent,
+              dayTotal: _goalDayTotal,
             ),
-            if (_feedback != null)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: _FeedbackOverlay(
-                    key: ValueKey(_feedback!.id),
-                    kind: _feedback!,
-                    onDone: () => setState(() => _feedback = null),
-                  ),
-                ),
-              ),
+            if (_reviewDue > 0) ...[
+              const SizedBox(height: 28),
+              const _SectionLabel('Review'),
+              const SizedBox(height: 12),
+              _ReviewCard(due: _reviewDue, onTap: _startReview),
+            ],
+            const SizedBox(height: 28),
+            const _SectionLabel('Recent'),
+            const SizedBox(height: 4),
+            ..._recent.map((a) => _ActivityRow(activity: a)),
           ],
         ),
       ),
@@ -131,279 +93,256 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _StatRow extends StatelessWidget {
+class _Activity {
+  final String title;
+  final int xp;
+  final String when;
+  const _Activity({required this.title, required this.xp, required this.when});
+}
+
+class _Greeting extends StatelessWidget {
+  final int dayNumber;
+  const _Greeting({required this.dayNumber});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'DAY $dayNumber',
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppColors.inkMuted,
+            letterSpacing: 1.4,
+            fontSize: 11,
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          'おかえり。',
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.w800,
+            color: AppColors.ink,
+            letterSpacing: -1,
+            height: 1.1,
+          ),
+        ),
+      ],
+    ).animate().fadeIn(duration: 320.ms).slideY(begin: 0.04, end: 0, duration: 380.ms, curve: Curves.easeOutCubic);
+  }
+}
+
+class _HeroStats extends StatelessWidget {
   final int xp;
   final int streak;
-  final int bumpKey;
-  const _StatRow({required this.xp, required this.streak, required this.bumpKey});
+  final int done;
+  final int total;
+  const _HeroStats({required this.xp, required this.streak, required this.done, required this.total});
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Expanded(child: _BigStat(value: '$xp', label: 'XP', emphasis: true)),
+        const _StatDivider(),
         Expanded(
-          child: _StatChip(
-            icon: Icons.bolt_rounded,
-            color: AppColors.vermillion,
-            label: 'XP',
-            value: xp,
-            bumpKey: bumpKey,
+          child: _BigStat(
+            value: '$streak',
+            label: 'STREAK',
+            trailing: const Text('🔥', style: TextStyle(fontSize: 22))
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.15, 1.15),
+                  duration: 900.ms,
+                  curve: Curves.easeInOut,
+                ),
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _StreakChip(streak: streak),
+        const _StatDivider(),
+        Expanded(child: _BigStat(value: '$done/$total', label: 'MODULES')),
+      ],
+    ).animate(delay: 80.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04, end: 0, duration: 400.ms);
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 44,
+      color: AppColors.hairline,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+    );
+  }
+}
+
+class _BigStat extends StatelessWidget {
+  final String value;
+  final String label;
+  final bool emphasis;
+  final Widget? trailing;
+  const _BigStat({required this.value, required this.label, this.emphasis = false, this.trailing});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Flexible(
+              child: Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.2,
+                  color: emphasis ? AppColors.accent : AppColors.ink,
+                  height: 1,
+                ),
+              ),
+            ),
+            if (trailing != null) ...[
+              const SizedBox(width: 6),
+              Padding(padding: const EdgeInsets.only(bottom: 2), child: trailing),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.inkMuted,
+            fontSize: 10,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
         ),
       ],
     );
   }
 }
 
-class _StatChip extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String label;
-  final int value;
-  final int bumpKey;
-  const _StatChip({
-    required this.icon,
-    required this.color,
-    required this.label,
-    required this.value,
-    required this.bumpKey,
-  });
+class _DailyHero extends StatelessWidget {
+  final int done;
+  final int total;
+  final VoidCallback onTap;
+  const _DailyHero({required this.done, required this.total, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final progress = total == 0 ? 0.0 : done / total;
+    final ctaLabel = done == 0 ? 'Start' : 'Continue';
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
       decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 22),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: AppColors.inkMuted,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              _RollingNumber(value: value, color: AppColors.ink)
-                  .animate(key: ValueKey(bumpKey))
-                  .scale(
-                    begin: const Offset(1, 1),
-                    end: const Offset(1.15, 1.15),
-                    duration: 180.ms,
-                    curve: Curves.easeOut,
-                  )
-                  .then()
-                  .scale(
-                    begin: const Offset(1.15, 1.15),
-                    end: const Offset(1, 1),
-                    duration: 220.ms,
-                    curve: Curves.elasticOut,
-                  ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StreakChip extends StatelessWidget {
-  final int streak;
-  const _StreakChip({required this.streak});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.divider),
-      ),
-      child: Row(
-        children: [
-          const Text('🔥', style: TextStyle(fontSize: 22))
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scale(
-                begin: const Offset(1, 1),
-                end: const Offset(1.12, 1.12),
-                duration: 900.ms,
-                curve: Curves.easeInOut,
-              ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'STREAK',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: AppColors.inkMuted,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              _RollingNumber(value: streak, color: AppColors.ink, suffix: ' days'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RollingNumber extends StatelessWidget {
-  final int value;
-  final Color color;
-  final String suffix;
-  const _RollingNumber({required this.value, required this.color, this.suffix = ''});
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: value.toDouble(), end: value.toDouble()),
-      duration: const Duration(milliseconds: 1),
-      builder: (_, v, __) => AnimatedSwitcher(
-        duration: const Duration(milliseconds: 250),
-        transitionBuilder: (child, anim) => SlideTransition(
-          position: Tween(begin: const Offset(0, 0.6), end: Offset.zero).animate(anim),
-          child: FadeTransition(opacity: anim, child: child),
-        ),
-        child: Text(
-          '$value$suffix',
-          key: ValueKey('$value$suffix'),
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: color,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DailyPlanCard extends StatelessWidget {
-  final int hiraganaCount;
-  const _DailyPlanCard({required this.hiraganaCount});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: AppColors.accent,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withValues(alpha: 0.25),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.vermillion.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(999),
+              Text(
+                'TODAY',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.2,
                 ),
-                child: const Text(
-                  'TODAY',
-                  style: TextStyle(
-                    color: AppColors.vermillion,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.8,
-                  ),
+              ),
+              Text(
+                '$done / $total',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           const Text(
             'Learn 5 hiragana',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'DB ready · $hiraganaCount kana seeded',
-            style: const TextStyle(color: AppColors.inkSoft, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+              height: 1.15,
+            ),
           ),
           const SizedBox(height: 16),
-          _ProgressBar(progress: 0.4),
+          _HeroProgressBar(progress: progress),
+          const SizedBox(height: 18),
+          _HeroCta(label: ctaLabel, onTap: onTap),
         ],
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(
-          begin: 0.08,
-          end: 0,
-          duration: 400.ms,
-          curve: Curves.easeOutCubic,
-        );
+    ).animate(delay: 160.ms).fadeIn(duration: 350.ms).slideY(begin: 0.06, end: 0, duration: 450.ms, curve: Curves.easeOutCubic);
   }
 }
 
-class _ProgressBar extends StatelessWidget {
+class _HeroProgressBar extends StatelessWidget {
   final double progress;
-  const _ProgressBar({required this.progress});
+  const _HeroProgressBar({required this.progress});
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Container(
-          height: 10,
-          decoration: BoxDecoration(
-            color: AppColors.divider,
-            borderRadius: BorderRadius.circular(999),
-          ),
-        ),
-        LayoutBuilder(
-          builder: (_, c) => TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: progress),
-            duration: const Duration(milliseconds: 900),
-            curve: Curves.easeOutCubic,
-            builder: (_, v, __) => Container(
-              height: 10,
-              width: c.maxWidth * v,
-              decoration: BoxDecoration(
-                color: AppColors.vermillion,
-                borderRadius: BorderRadius.circular(999),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: Stack(
+        children: [
+          Container(height: 8, color: Colors.white.withValues(alpha: 0.25)),
+          LayoutBuilder(
+            builder: (_, c) => TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (_, v, __) => Container(
+                height: 8,
+                width: c.maxWidth * v,
+                color: Colors.white,
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class _SpringButton extends StatefulWidget {
+class _HeroCta extends StatefulWidget {
   final String label;
-  final Color color;
   final VoidCallback onTap;
-  const _SpringButton({required this.label, required this.color, required this.onTap});
+  const _HeroCta({required this.label, required this.onTap});
 
   @override
-  State<_SpringButton> createState() => _SpringButtonState();
+  State<_HeroCta> createState() => _HeroCtaState();
 }
 
-class _SpringButtonState extends State<_SpringButton> {
+class _HeroCtaState extends State<_HeroCta> {
   bool _down = false;
 
   @override
@@ -416,31 +355,31 @@ class _SpringButtonState extends State<_SpringButton> {
         widget.onTap();
       },
       child: AnimatedScale(
-        scale: _down ? 0.94 : 1.0,
+        scale: _down ? 0.96 : 1.0,
         duration: const Duration(milliseconds: 120),
         curve: Curves.easeOut,
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: widget.color,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.25),
-                blurRadius: 14,
-                offset: const Offset(0, 6),
-              ),
-            ],
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
           ),
-          child: Text(
-            widget.label,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.label,
+                style: const TextStyle(
+                  color: AppColors.accentDark,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.2,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.arrow_forward_rounded, size: 18, color: AppColors.accentDark),
+            ],
           ),
         ),
       ),
@@ -448,113 +387,466 @@ class _SpringButtonState extends State<_SpringButton> {
   }
 }
 
-enum _Feedback {
-  correct,
-  wrong;
-
-  String get id => '$name-${DateTime.now().microsecondsSinceEpoch}';
-}
-
-class _FeedbackOverlay extends StatefulWidget {
-  final _Feedback kind;
-  final VoidCallback onDone;
-  const _FeedbackOverlay({super.key, required this.kind, required this.onDone});
-
-  @override
-  State<_FeedbackOverlay> createState() => _FeedbackOverlayState();
-}
-
-class _FeedbackOverlayState extends State<_FeedbackOverlay> with SingleTickerProviderStateMixin {
-  late final AnimationController _c;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
-      ..forward().whenComplete(widget.onDone);
-  }
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
 
   @override
   Widget build(BuildContext context) {
-    final isCorrect = widget.kind == _Feedback.correct;
-    final color = isCorrect ? AppColors.success : AppColors.danger;
-
-    return Stack(
-      children: [
-        FadeTransition(
-          opacity: Tween(begin: 0.25, end: 0.0).animate(
-            CurvedAnimation(parent: _c, curve: Curves.easeOut),
-          ),
-          child: Container(color: color),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          color: AppColors.inkMuted,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 1.4,
         ),
-        Center(
-          child: ScaleTransition(
-            scale: CurvedAnimation(parent: _c, curve: Curves.elasticOut),
-            child: FadeTransition(
-              opacity: Tween(begin: 1.0, end: 0.0).animate(
-                CurvedAnimation(parent: _c, curve: const Interval(0.6, 1.0)),
-              ),
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-                child: Icon(
-                  isCorrect ? Icons.check_rounded : Icons.close_rounded,
-                  color: Colors.white,
-                  size: 80,
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (isCorrect) _Confetti(controller: _c),
-      ],
+      ),
     );
   }
 }
 
-class _Confetti extends StatelessWidget {
-  final AnimationController controller;
-  const _Confetti({required this.controller});
+class _WeekStrip extends StatelessWidget {
+  final List<bool> days;
+  final int todayIndex;
+  const _WeekStrip({required this.days, required this.todayIndex});
+
+  static const _labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
   @override
   Widget build(BuildContext context) {
-    final rnd = math.Random(7);
-    final pieces = List.generate(20, (i) {
-      final dx = rnd.nextDouble() * 2 - 1;
-      final dy = -(rnd.nextDouble() * 0.8 + 0.4);
-      final color = [
-        AppColors.vermillion,
-        AppColors.gold,
-        AppColors.success,
-      ][i % 3];
-      return AnimatedBuilder(
-        animation: controller,
-        builder: (_, __) {
-          final t = controller.value;
-          return Align(
-            alignment: Alignment(dx * t * 1.4, dy * t + (t * t) * 1.6),
-            child: Opacity(
-              opacity: (1 - t).clamp(0, 1),
-              child: Transform.rotate(
-                angle: t * 6 * (i.isEven ? 1 : -1),
-                child: Container(
-                  width: 10,
-                  height: 14,
-                  color: color,
+    return Row(
+      children: List.generate(days.length, (i) {
+        final studied = days[i];
+        final isToday = i == todayIndex;
+        return Expanded(
+          child: Column(
+            children: [
+              Text(
+                _labels[i],
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isToday ? AppColors.ink : AppColors.inkMuted,
+                  letterSpacing: 0.5,
                 ),
               ),
+              const SizedBox(height: 8),
+              _WeekDot(studied: studied, isToday: isToday),
+            ],
+          ),
+        );
+      }),
+    ).animate(delay: 240.ms).fadeIn(duration: 350.ms);
+  }
+}
+
+class _WeekDot extends StatelessWidget {
+  final bool studied;
+  final bool isToday;
+  const _WeekDot({required this.studied, required this.isToday});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = isToday ? 14.0 : 10.0;
+    final color = studied
+        ? AppColors.accent
+        : (isToday ? AppColors.accentTint : AppColors.hairline);
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        border: isToday && !studied
+            ? Border.all(color: AppColors.accent, width: 2)
+            : null,
+      ),
+    );
+  }
+}
+
+class _GoalCard extends StatelessWidget {
+  final String level;
+  final String target;
+  final int dayCurrent;
+  final int dayTotal;
+  const _GoalCard({
+    required this.level,
+    required this.target,
+    required this.dayCurrent,
+    required this.dayTotal,
+  });
+
+  static const _stages = [
+    _Stage('Hiragana basics', _StageStatus.done),
+    _Stage('Hiragana full', _StageStatus.current),
+    _Stage('Katakana', _StageStatus.upcoming),
+    _Stage('Kanji N5', _StageStatus.upcoming),
+    _Stage('Vocab + grammar', _StageStatus.upcoming),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final currentIndex = _stages.indexWhere((s) => s.status == _StageStatus.current);
+    final current = _stages[currentIndex];
+    final next = currentIndex + 1 < _stages.length ? _stages[currentIndex + 1] : null;
+    final progress = dayCurrent / dayTotal;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.ink.withValues(alpha: 0.04),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                level,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                  color: AppColors.ink,
+                ),
+              ),
+              Text(
+                'target $target',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.inkMuted,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'STAGE ${currentIndex + 1} OF ${_stages.length}',
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+              color: AppColors.accent,
             ),
-          );
-        },
-      );
-    });
-    return Stack(children: pieces);
+          ),
+          const SizedBox(height: 4),
+          Text(
+            current.label,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.3,
+              color: AppColors.ink,
+            ),
+          ),
+          if (next != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              'Up next  ·  ${next.label}',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.inkMuted,
+              ),
+            ),
+          ],
+          const SizedBox(height: 18),
+          _StagePath(stages: _stages),
+          const SizedBox(height: 18),
+          _GoalProgressBar(progress: progress),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Day $dayCurrent of $dayTotal',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.inkSoft,
+                ),
+              ),
+              Text(
+                '${(progress * 100).round()}%',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.accent,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ).animate(delay: 280.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04, end: 0, duration: 400.ms, curve: Curves.easeOutCubic);
+  }
+}
+
+enum _StageStatus { done, current, upcoming }
+
+class _Stage {
+  final String label;
+  final _StageStatus status;
+  const _Stage(this.label, this.status);
+}
+
+class _StagePath extends StatelessWidget {
+  final List<_Stage> stages;
+  const _StagePath({required this.stages});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 14,
+      child: Row(
+        children: List.generate(stages.length * 2 - 1, (i) {
+          if (i.isOdd) {
+            final leftDone = stages[i ~/ 2].status == _StageStatus.done;
+            final rightDone = stages[i ~/ 2 + 1].status != _StageStatus.upcoming;
+            return Expanded(
+              child: Container(
+                height: 2,
+                color: (leftDone && rightDone) ? AppColors.accent : AppColors.hairline,
+              ),
+            );
+          }
+          final stage = stages[i ~/ 2];
+          return _StageNode(status: stage.status);
+        }),
+      ),
+    );
+  }
+}
+
+class _StageNode extends StatelessWidget {
+  final _StageStatus status;
+  const _StageNode({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    switch (status) {
+      case _StageStatus.done:
+        return Container(
+          width: 10,
+          height: 10,
+          decoration: const BoxDecoration(color: AppColors.accent, shape: BoxShape.circle),
+        );
+      case _StageStatus.current:
+        return Container(
+          width: 14,
+          height: 14,
+          decoration: BoxDecoration(
+            color: AppColors.accent,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accent.withValues(alpha: 0.35),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+        );
+      case _StageStatus.upcoming:
+        return Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: AppColors.bg,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.hairline, width: 2),
+          ),
+        );
+    }
+  }
+}
+
+class _GoalProgressBar extends StatelessWidget {
+  final double progress;
+  const _GoalProgressBar({required this.progress});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(999),
+      child: Stack(
+        children: [
+          Container(height: 6, color: AppColors.hairline),
+          LayoutBuilder(
+            builder: (_, c) => TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress.clamp(0, 1)),
+              duration: const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (_, v, __) => Container(
+                height: 6,
+                width: c.maxWidth * v,
+                color: AppColors.accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReviewCard extends StatefulWidget {
+  final int due;
+  final VoidCallback onTap;
+  const _ReviewCard({required this.due, required this.onTap});
+
+  @override
+  State<_ReviewCard> createState() => _ReviewCardState();
+}
+
+class _ReviewCardState extends State<_ReviewCard> {
+  bool _down = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _down = true),
+      onTapCancel: () => setState(() => _down = false),
+      onTapUp: (_) {
+        setState(() => _down = false);
+        widget.onTap();
+      },
+      child: AnimatedScale(
+        scale: _down ? 0.98 : 1.0,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOut,
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 18, 16, 18),
+          decoration: BoxDecoration(
+            color: AppColors.accentTint,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            children: [
+              Text(
+                '${widget.due}',
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -1.2,
+                  color: AppColors.accentDark,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'cards due',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'review now to keep your streak',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: const BoxDecoration(
+                  color: AppColors.accent,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 22),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ).animate(delay: 320.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04, end: 0, duration: 400.ms);
+  }
+}
+
+class _ActivityRow extends StatelessWidget {
+  final _Activity activity;
+  const _ActivityRow({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(
+              color: AppColors.tintSage,
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const Icon(Icons.check_rounded, size: 16, color: AppColors.success),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              activity.title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.ink,
+                letterSpacing: -0.2,
+              ),
+            ),
+          ),
+          Text(
+            '+${activity.xp} XP',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: AppColors.accent,
+              letterSpacing: -0.1,
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 64,
+            child: Text(
+              activity.when,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.inkMuted,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(delay: 360.ms, duration: 320.ms);
   }
 }
