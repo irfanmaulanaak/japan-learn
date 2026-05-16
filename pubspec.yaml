@@ -23,6 +23,10 @@ dependencies:
   # Lightweight key-value store for settings/progress
   shared_preferences: ^2.3.2
 
+  # Animations & fonts
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
