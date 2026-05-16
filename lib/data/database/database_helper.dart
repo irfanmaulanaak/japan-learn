@@ -9,7 +9,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const _dbName = 'japan_learn.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   Database? _db;
 
@@ -38,12 +38,16 @@ class DatabaseHelper {
       )
     ''');
     await _createUserGoalTable(db);
+    await _createUserProgressTable(db);
     await _seedKana(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await _createUserGoalTable(db);
+    }
+    if (oldVersion < 3) {
+      await _createUserProgressTable(db);
     }
   }
 
@@ -59,6 +63,23 @@ class DatabaseHelper {
         daily_vocab_goal INTEGER NOT NULL,
         daily_review_minutes INTEGER NOT NULL,
         created_at TEXT NOT NULL
+      )
+    ''');
+  }
+
+  Future<void> _createUserProgressTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE user_progress (
+        id INTEGER PRIMARY KEY,
+        xp INTEGER NOT NULL,
+        streak_count INTEGER NOT NULL,
+        modules_done INTEGER NOT NULL,
+        modules_total INTEGER NOT NULL,
+        day_number INTEGER NOT NULL,
+        today_done INTEGER NOT NULL,
+        review_due INTEGER NOT NULL,
+        week_mask TEXT NOT NULL,
+        updated_at TEXT NOT NULL
       )
     ''');
   }

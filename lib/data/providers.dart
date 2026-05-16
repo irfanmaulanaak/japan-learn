@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'database/database_helper.dart';
 import 'models/kana.dart';
 import 'models/user_goal.dart';
+import 'models/user_progress.dart';
 import 'repositories/kana_repository.dart';
 import 'repositories/user_goal_repository.dart';
+import 'repositories/user_progress_repository.dart';
 
 final databaseHelperProvider = Provider<DatabaseHelper>((ref) {
   return DatabaseHelper.instance;
@@ -18,8 +20,16 @@ final userGoalRepositoryProvider = Provider<UserGoalRepository>((ref) {
   return UserGoalRepository(ref.watch(databaseHelperProvider));
 });
 
+final userProgressRepositoryProvider = Provider<UserProgressRepository>((ref) {
+  return UserProgressRepository(ref.watch(databaseHelperProvider));
+});
+
 final userGoalProvider = FutureProvider<UserGoal?>((ref) {
   return ref.watch(userGoalRepositoryProvider).current();
+});
+
+final userProgressProvider = FutureProvider<UserProgress>((ref) {
+  return ref.watch(userProgressRepositoryProvider).currentOrCreate();
 });
 
 final hiraganaListProvider = FutureProvider<List<Kana>>((ref) {

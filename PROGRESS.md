@@ -3,7 +3,7 @@
 Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; this file is the current state.
 
 ## Status
-**Phase 1 — MVP** · dashboard + onboarding scaffolded. No real learning flows yet.
+**Phase 1 — MVP** · dashboard, onboarding, and progress state scaffolded. No real learning flows yet.
 
 ## Done
 
@@ -19,7 +19,9 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] Hiragana seed — 46 characters loaded on first launch (`lib/data/seed/kana_seed.dart`)
 - [x] Riverpod providers for kana lists (`lib/data/providers.dart`)
 - [x] User goal table + repository (`lib/data/models/user_goal.dart`, `lib/data/repositories/user_goal_repository.dart`)
+- [x] User progress table + repository (`lib/data/models/user_progress.dart`, `lib/data/repositories/user_progress_repository.dart`)
 - [x] Riverpod provider for first-launch goal gate
+- [x] Riverpod provider for current progress state
 
 ### Theme
 - [x] Design language: "playful but refined" (Notion / Reflect / refined-Duolingo)
@@ -34,7 +36,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] Tab icons spring-scale on selection
 - [x] Haptic feedback on tab change
 
-### Home dashboard (UI complete, data mocked)
+### Home dashboard
 - [x] Greeting — `DAY N` + `おかえり。`
 - [x] Hero stats row — XP / streak / modules done (typographic, hairline dividers)
 - [x] Streak flame breathing animation
@@ -42,8 +44,9 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] This week strip — 7 dots, today larger + ringed
 - [x] Goal card — JLPT target, stage indicator, stage path dots, day progress bar
 - [x] Review card — SRS due CTA (hidden when 0)
-- [x] Recent activity rows — last 3 lessons with XP
 - [x] Staggered section entry animations
+- [x] Reads saved `user_goal` for target, timeline, stage, and daily plan
+- [x] Reads saved `user_progress` for XP, streak, modules, day, today progress, week strip, and review count
 
 ### Learn tab (UI complete, data mocked)
 - [x] Module list — Hiragana / Katakana / Kanji / Vocabulary
@@ -66,30 +69,16 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] Persisted goal to `user_goal`
 - [x] First-launch gate shows onboarding when no `user_goal` row exists
 
-## Mocked (needs real data)
-These are hardcoded in the UI today. Will be replaced when the backing flows ship.
+## Mocked / placeholder
+These still need real learning flows or content behind them.
 
-- XP value (currently `120`)
-- Streak count (currently `3`)
-- Modules done count (currently `0/4`)
-- Day number (currently `3`)
-- Today's lesson + progress (currently `Learn 5 hiragana · 2/5`)
-- Week strip days (currently `[T, T, F, F, F, F, F]`)
-- Goal stage data (currently `JLPT N5 · stage 2 of 5 · Hiragana full`)
-- Saved onboarding goal exists, but Home dashboard goal card is still mocked
-- Review due count (currently `12`)
-- Recent activity list (3 hardcoded entries)
+- Progress values now persist, but stay at initial defaults until lessons update them
+- Learn tab module lock/progress state is still mostly static
+- Recent activity is hidden until real lesson activity exists
 
 ## Next up
 
-### 1. User state & dashboard wiring
-- `user_progress` table + repository
-- Riverpod providers for current progress state
-- Wire Home dashboard goal card to saved `user_goal`
-- Wire Today's plan to generated daily goals
-- Wire Home dashboard stats to real values
-
-### 2. Hiragana learning module (first real feature)
+### 1. Hiragana learning module (first real feature)
 - Browse all 46 in a grid
 - Flashcard study mode (character → romaji)
 - Quiz mode (kana → romaji, romaji → kana)
@@ -120,7 +109,11 @@ lib/
 │   ├── providers.dart               — Riverpod providers
 │   ├── database/database_helper.dart
 │   ├── models/kana.dart
+│   ├── models/user_goal.dart
+│   ├── models/user_progress.dart
 │   ├── repositories/kana_repository.dart
+│   ├── repositories/user_goal_repository.dart
+│   ├── repositories/user_progress_repository.dart
 │   └── seed/kana_seed.dart
 └── features/
     ├── home/home_screen.dart        — dashboard (greeting / stats / today / week / goal / review / recent)

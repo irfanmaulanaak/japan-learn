@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/models/user_goal.dart';
+import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -13,34 +15,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  // Demo state — wired to real data later.
-  final int _xp = 120;
-  final int _streak = 3;
-  final int _modulesDone = 0;
-  final int _modulesTotal = 4;
-  final int _dayNumber = 3;
-  final int _todayDone = 2;
-  final int _todayTotal = 5;
-  // ● = studied, ○ = not yet, today is index 2 (Wed)
-  final List<bool> _week = const [true, true, false, false, false, false, false];
-  final int _todayWeekIndex = 2;
-
-  // Goal mock
-  final String _goalLevel = 'JLPT N5';
-  final String _goalTarget = 'Aug 2026';
-  final int _goalDayCurrent = 12;
-  final int _goalDayTotal = 90;
-
-  // Review queue mock (set to 0 to hide the section)
-  final int _reviewDue = 12;
-
-  // Recent activity mock
-  final List<_Activity> _recent = const [
-    _Activity(title: 'Hiragana  あ–お', xp: 25, when: '2h ago'),
-    _Activity(title: 'Hiragana  か–こ', xp: 25, when: 'yesterday'),
-    _Activity(title: 'Daily quiz', xp: 10, when: '2 days ago'),
-  ];
-
   void _startDaily() {
     HapticFeedback.lightImpact();
     // TODO: route into today's lesson.
@@ -53,51 +27,142 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final goalAsync = ref.watch(userGoalProvider);
+    final progressAsync = ref.watch(userProgressProvider);
+
+    if (goalAsync.hasError) return _HomeError(error: goalAsync.error!);
+    if (progressAsync.hasError) return _HomeError(error: progressAsync.error!);
+
+    final goal = goalAsync.value;
+    final progress = progressAsync.value;
+    if (goal == null || progress == null) return const _HomeLoading();
+
+    final todayTotal = goal.dailyVocabGoal + goal.dailyKanjiGoal;
+    final todayDone = progress.todayDone.clamp(0, todayTotal).toInt();
+    final goalDayTotal = goal.timelineMonths * 30;
+    final goalDayCurrent = progress.dayNumber.clamp(1, goalDayTotal).toInt();
+    final todayWeekIndex = DateTime.now().weekday - 1;
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
           children: [
-            _Greeting(dayNumber: _dayNumber),
+            _Greeting(dayNumber: progress.dayNumber),
             const SizedBox(height: 28),
-            _HeroStats(xp: _xp, streak: _streak, done: _modulesDone, total: _modulesTotal),
+            _HeroStats(
+              xp: progress.xp,
+              streak: progress.streakCount,
+              done: progress.modulesDone,
+              total: progress.modulesTotal,
+            ),
             const SizedBox(height: 28),
-            _DailyHero(done: _todayDone, total: _todayTotal, onTap: _startDaily),
+            _DailyHero(
+              title: _todayPlanTitle(goal),
+              done: todayDone,
+              total: todayTotal,
+              onTap: _startDaily,
+            ),
             const SizedBox(height: 36),
             const _SectionLabel('This week'),
             const SizedBox(height: 14),
-            _WeekStrip(days: _week, todayIndex: _todayWeekIndex),
+            _WeekStrip(days: progress.weekStudyDays, todayIndex: todayWeekIndex),
             const SizedBox(height: 36),
             const _SectionLabel('Goal'),
             const SizedBox(height: 12),
             _GoalCard(
-              level: _goalLevel,
-              target: _goalTarget,
-              dayCurrent: _goalDayCurrent,
-              dayTotal: _goalDayTotal,
+              level: 'JLPT ${goal.targetLevel}',
+              target: _targetMonth(goal),
+              dayCurrent: goalDayCurrent,
+              dayTotal: goalDayTotal,
+              currentStageIndex: _stageIndexFor(goal.startingPoint),
             ),
-            if (_reviewDue > 0) ...[
+            if (progress.reviewDue > 0) ...[
               const SizedBox(height: 28),
               const _SectionLabel('Review'),
               const SizedBox(height: 12),
-              _ReviewCard(due: _reviewDue, onTap: _startReview),
+              _ReviewCard(due: progress.reviewDue, onTap: _startReview),
             ],
-            const SizedBox(height: 28),
-            const _SectionLabel('Recent'),
-            const SizedBox(height: 4),
-            ..._recent.map((a) => _ActivityRow(activity: a)),
           ],
         ),
       ),
     );
   }
+
+  String _todayPlanTitle(UserGoal goal) {
+    return '${goal.dailyVocabGoal} vocab + ${goal.dailyKanjiGoal} kanji';
+  }
+
+  String _targetMonth(UserGoal goal) {
+    final target = DateTime.utc(
+      goal.createdAt.year,
+      goal.createdAt.month + goal.timelineMonths,
+    );
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[target.month - 1]} ${target.year}';
+  }
+
+  int _stageIndexFor(String startingPoint) {
+    switch (startingPoint) {
+      case 'Know hiragana':
+        return 1;
+      case 'Some kanji':
+        return 3;
+      case 'Returning learner':
+        return 4;
+    }
+    return 0;
+  }
 }
 
-class _Activity {
-  final String title;
-  final int xp;
-  final String when;
-  const _Activity({required this.title, required this.xp, required this.when});
+class _HomeLoading extends StatelessWidget {
+  const _HomeLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
+    );
+  }
+}
+
+class _HomeError extends StatelessWidget {
+  final Object error;
+  const _HomeError({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'Could not load progress:\n$error',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.danger,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _Greeting extends StatelessWidget {
@@ -235,10 +300,16 @@ class _BigStat extends StatelessWidget {
 }
 
 class _DailyHero extends StatelessWidget {
+  final String title;
   final int done;
   final int total;
   final VoidCallback onTap;
-  const _DailyHero({required this.done, required this.total, required this.onTap});
+  const _DailyHero({
+    required this.title,
+    required this.done,
+    required this.total,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -284,9 +355,9 @@ class _DailyHero extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          const Text(
-            'Learn 5 hiragana',
-            style: TextStyle(
+          Text(
+            title,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 26,
               fontWeight: FontWeight.w800,
@@ -473,26 +544,21 @@ class _GoalCard extends StatelessWidget {
   final String target;
   final int dayCurrent;
   final int dayTotal;
+  final int currentStageIndex;
   const _GoalCard({
     required this.level,
     required this.target,
     required this.dayCurrent,
     required this.dayTotal,
+    required this.currentStageIndex,
   });
-
-  static const _stages = [
-    _Stage('Hiragana basics', _StageStatus.done),
-    _Stage('Hiragana full', _StageStatus.current),
-    _Stage('Katakana', _StageStatus.upcoming),
-    _Stage('Kanji N5', _StageStatus.upcoming),
-    _Stage('Vocab + grammar', _StageStatus.upcoming),
-  ];
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = _stages.indexWhere((s) => s.status == _StageStatus.current);
-    final current = _stages[currentIndex];
-    final next = currentIndex + 1 < _stages.length ? _stages[currentIndex + 1] : null;
+    final stages = _stages();
+    final currentIndex = currentStageIndex.clamp(0, stages.length - 1).toInt();
+    final current = stages[currentIndex];
+    final next = currentIndex + 1 < stages.length ? stages[currentIndex + 1] : null;
     final progress = dayCurrent / dayTotal;
 
     return Container(
@@ -535,7 +601,7 @@ class _GoalCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'STAGE ${currentIndex + 1} OF ${_stages.length}',
+            'STAGE ${currentIndex + 1} OF ${stages.length}',
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w800,
@@ -565,7 +631,7 @@ class _GoalCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 18),
-          const _StagePath(stages: _stages),
+          _StagePath(stages: stages),
           const SizedBox(height: 18),
           _GoalProgressBar(progress: progress),
           const SizedBox(height: 8),
@@ -593,6 +659,23 @@ class _GoalCard extends StatelessWidget {
         ],
       ),
     ).animate(delay: 280.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04, end: 0, duration: 400.ms, curve: Curves.easeOutCubic);
+  }
+
+  List<_Stage> _stages() {
+    final target = level.replaceFirst('JLPT ', '');
+    final labels = [
+      'Hiragana basics',
+      'Hiragana full',
+      'Katakana',
+      'Kanji $target',
+      'Vocab + grammar',
+    ];
+    final currentIndex = currentStageIndex.clamp(0, labels.length - 1).toInt();
+    return List.generate(labels.length, (i) {
+      if (i < currentIndex) return _Stage(labels[i], _StageStatus.done);
+      if (i == currentIndex) return _Stage(labels[i], _StageStatus.current);
+      return _Stage(labels[i], _StageStatus.upcoming);
+    });
   }
 }
 
@@ -788,65 +871,5 @@ class _ReviewCardState extends State<_ReviewCard> {
         ),
       ),
     ).animate(delay: 320.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04, end: 0, duration: 400.ms);
-  }
-}
-
-class _ActivityRow extends StatelessWidget {
-  final _Activity activity;
-  const _ActivityRow({required this.activity});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(
-              color: AppColors.tintSage,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: const Icon(Icons.check_rounded, size: 16, color: AppColors.success),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              activity.title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: AppColors.ink,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-          Text(
-            '+${activity.xp} XP',
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: AppColors.accent,
-              letterSpacing: -0.1,
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 64,
-            child: Text(
-              activity.when,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.inkMuted,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 360.ms, duration: 320.ms);
   }
 }
