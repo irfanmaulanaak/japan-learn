@@ -1,39 +1,40 @@
 ## Instructions
-- Gunakan bahasa Indonesia atau Inggris campuran dalam diskusi.
-- Utamakan simple dan concise. Jangan over-engineering.
-- Simpan catatan project di bagian Project Notes di bawah, update jika ada perubahan.
-- Sebelum nulis kode, baca PLAN.md untuk referensi keputusan arsitektur.
+- Always use English for all documentation and code comments.
+- Prefer simple, concise language. No over-engineering.
+- Keep project notes updated in the Project Notes section below.
+- Read PLAN.md for architecture decisions before writing code.
 
 ## Guardrails
 - Keep files <~400 LOC; split/refactor as needed
 - Simplicity first: handle only important cases; no enterprise over-engineering
 - New functionality: small OR absolutely necessary
 - NEVER delete files/folders/data unless explicitly approved or part of a plan
-- Gunakan `git mv` / `git cp` untuk move/copy files
+- Use `git mv` / `git cp` for move/copy files
 
 ## Tech Stack
 - **Framework:** Flutter (Dart)
-- **State Management:** BLoC / Riverpod (TBD — tentukan di fase coding)
+- **State Management:** BLoC / Riverpod (TBD — decide during coding phase)
 - **Local DB:** SQLite via drift/sqflite
 - **SRS:** SM-2 algorithm
-- **Build:** Android + iOS + macOS + Windows + Linux
+- **Platforms:** Android (primary), iOS, macOS, Windows, Linux
 
 ## Project Notes
 Update this section as the project evolves.
 
-- Platform: Flutter cross-platform (Android darat, iOS, macOS, Windows, Linux nanti)
-- Pendekatan: full offline-first, data dibundling di APK. Tidak ada ketergantungan API eksternal.
-- Fitur inti: SRS flashcards, hiragana/katakana learning, kamus offline, timeline goal tracker, kanji by radicals, kuis, shadowing, JLPT mock test.
-- Fitur TIDAK termasuk: AI chatbot/tutor.
-- Goal Tracker: onboarding 3 pertanyaan (target level, timeline, starting point) → daily plan otomatis.
-- Data content (vocab, kanji, soal) digenerate sendiri, bukan scrap dari API.
-- Desain: minimalis + gamified (XP, streak, level, badges).
+- Platform: Flutter cross-platform (Android first, then iOS, macOS, Windows, Linux)
+- Approach: full offline-first, data bundled in APK. No external API dependency.
+- Core features: SRS flashcards, hiragana/katakana learning, offline dictionary, timeline goal tracker, kanji by radicals, quizzes, shadowing, JLPT mock test.
+- EXCLUDED features: AI chatbot/tutor.
+- Goal Tracker: onboarding 3 questions (target JLPT level, timeline, starting point) → auto-generates daily plan.
+- Content data (vocab, kanji, quiz questions) is self-generated, not scraped from APIs.
+- Design: minimal + gamified (XP, streak, level, badges).
+- CI/CD: GitHub Actions workflow at `.github/workflows/build-apk.yml` — auto-builds APK on push to main/develop.
 
 ## Research & Development
-- Web search untuk referensi best practices Flutter/SRS/gamifikasi
-- Cari referensi database structure untuk aplikasi belajar bahasa
-- Cek package Flutter yang cocok (sqflite, hive, audioplayers, dll)
+- Web search for Flutter/SRS/gamification best practices
+- Reference database structures for language learning apps
+- Evaluate suitable Flutter packages (sqflite, hive, audioplayers, etc.)
 
 ## Error Handling
-- Expected issues: explicit result types (bukan throw/try/catch)
-- Unexpected issues: fail LOUD (throw/console.error); jangan silent fallback
+- Expected issues: explicit result types (not throw/try/catch)
+- Unexpected issues: fail LOUD (throw/console.error); no silent fallbacks

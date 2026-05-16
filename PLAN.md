@@ -1,78 +1,80 @@
-# Japan Learn — Rencana Aplikasi
+# Japan Learn — Application Plan
 
 ## Vision
-Aplikasi belajar bahasa Jepang cross-platform (Android, iOS, macOS, Windows, Linux) dengan pendekatan Spaced Repetition System (SRS), gamifikasi, dan goal tracking.
+A cross-platform Japanese language learning app (Android, iOS, macOS, Windows, Linux) using Spaced Repetition System (SRS), gamification, and goal tracking.
 
 ## Tech Stack
 - **Framework:** Flutter (Dart) — cross-platform
 - **State Management:** BLoC / Riverpod (TBD)
 - **Local Database:** SQLite (sqflite / drift)
-- **SRS Algorithm:** SM-2 (yang dipake Anki)
-- **Local Storage:** Hive / SharedPreferences untuk settings & progress
+- **SRS Algorithm:** SM-2 (used by Anki)
+- **Local Storage:** Hive / SharedPreferences for settings & progress
+- **CI/CD:** GitHub Actions — auto-build APK on push (see `.github/workflows/build-apk.yml`)
 
-## Keputusan Arsitektur
+## Architecture Decisions
 
 ### Online vs Offline
-- **90% fitur full offline** — data dibundling di APK
-- Data yang dibundling: hiragana/katakana, vocab, kanji, radicals, soal kuis, grammar
-- Tidak perlu koneksi internet untuk operasional harian
-- Content reading (artikel) bisa digenerate sendiri, tidak perlu live API
+- **90% features fully offline** — data bundled in APK
+- Bundled data: hiragana/katakana, vocabulary, kanji, radicals, quiz questions, grammar
+- No internet connection required for daily operation
+- Reading content (articles) will be self-generated, no live API
 
-### Fitur Tidak Termasuk
-- ❌ AI tutor / chatbot
+### Excluded Features
+- ❌ AI chatbot / tutor
 
-## Fitur Lengkap & Roadmap
+## Full Feature List & Roadmap
 
-### Fase 1 — MVP
-| Fitur | Keterangan |
-|-------|-----------|
-| **🈳 Hiragana & Katakana Learning** | Flashcard + quiz menulis, per baris (a,i,u,e,o → ka,ki,ku,ke,ko) |
-| **🔄 SRS Flashcards** | Sistem pengulangan spasi SM-2 untuk vocab & kanji |
-| **📖 Kamus Offline** | Search kata, contoh kalimat, bookmark |
-| **🎯 Timeline Goal Tracker** | Onboarding: target JLPT + timeline → daily plan otomatis |
-| **📊 Progress Tracking** | Streak, XP, Level, progress bar per modul |
+### Phase 1 — MVP
+| Feature | Description |
+|---------|-------------|
+| **🈳 Hiragana & Katakana Learning** | Flashcards + writing quiz, per row (a,i,u,e,o → ka,ki,ku,ke,ko) |
+| **🔄 SRS Flashcards** | SM-2 spaced repetition for vocab & kanji |
+| **📖 Offline Dictionary** | Word search, example sentences, bookmarks |
+| **🎯 Timeline Goal Tracker** | Onboarding: target JLPT + timeline → auto daily plan |
+| **📊 Progress Tracking** | Streak, XP, Level, module progress bars |
 
-### Fase 2 — Penguatan
-| Fitur | Keterangan |
-|-------|-----------|
-| **🔤 Kanji by Radicals** | Belajar kanji dari komponen dasar, stroke order animation |
-| **🧪 Kuis Interaktif** | Tebak arti, listening quiz, drag & drop, multiple choice |
-| **🏆 Gamifikasi** | Achievement badges, streak rewards, level-up system |
+### Phase 2 — Reinforcement
+| Feature | Description |
+|---------|-------------|
+| **🔤 Kanji by Radicals** | Learn kanji from component parts, stroke order animation |
+| **🧪 Interactive Quizzes** | Guess meaning, listening quiz, drag & drop, multiple choice |
+| **🏆 Gamification** | Achievement badges, streak rewards, level-up system |
 
-### Fase 3 — Mahir
-| Fitur | Keterangan |
-|-------|-----------|
-| **🗣️ Shadowing Practice**| Record suara + play back + bandingkan dengan native |
-| **📰 Reading Content**| Artikel graded (N5→N1) yang digenerate sendiri |
-| **🏆 JLPT Mock Test** | Simulasi ujian N5 sampai N1, timer, scoring |
+### Phase 3 — Advanced
+| Feature | Description |
+|---------|-------------|
+| **🗣️ Shadowing Practice** | Record voice + playback + compare with native audio |
+| **📰 Reading Content** | Graded articles (N5→N1) self-generated |
+| **🏆 JLPT Mock Test** | Timed exam simulation N5–N1, scoring, pass/fail |
 
-### Fase 4 — Polish
-| Fitur | Keterangan |
-|-------|-----------|
-| **Anki Deck Import** | Import deck .apkg dari Anki |
-| **Sync Across Devices** | Opsional backup progress via cloud |
+### Phase 4 — Polish
+| Feature | Description |
+|---------|-------------|
+| **Anki Deck Import** | Import .apkg decks from Anki |
+| **Cross-device Sync** | Optional cloud progress backup |
 
-## Desain
-- **Style:** Minimalis + Gamified
-- **Color:** Palet bersih, aksen Jepang
-- **Typography:** Noto Sans JP untuk keterbacaan kanji
-- **Target User:** Semua level (N5 → N1)
+## Design
+- **Style:** Minimal + Gamified
+- **Color:** Clean palette with Japanese accent tones
+- **Typography:** Noto Sans JP for kanji readability
+- **Target User:** All levels (N5 → N1)
 
-## Goal Tracker — Detail Flow
-1. **Onboarding Awal (3 pertanyaan):**
-   - Level target? (N5 / N4 / N3 / N2 / N1)
-   - Target waktu? (3 bulan / 6 bulan / 1 tahun / custom)
-   - Starting point? (NOL TOTAL / bisa hiragana / dsb)
-2. **Sistem generate:**
-   - Timeline milestone (misal N5 dalam 3 bulan = 5 kanji/hari + 10 vocab/hari)
-   - Daily goal otomatis
-   - Progress bar visual menuju target
+## Goal Tracker — Detailed Flow
+1. **Initial Onboarding (3 questions):**
+   - Target level? (N5 / N4 / N3 / N2 / N1)
+   - Target timeline? (3 months / 6 months / 1 year / custom)
+   - Starting point? (ABSOLUTE BEGINNER / know hiragana / some kanji / etc.)
+2. **System generates:**
+   - Timeline milestones (e.g. N5 in 3 months = 5 kanji/day + 10 vocab/day)
+   - Auto daily goals
+   - Visual progress bar toward target
+   - Adaptive: if user falls behind, adjust daily load
 
-## Struktur Database (Awal)
-- `kana` — hiragana & katakana (karakter, romaji, stroke order, audio)
-- `vocabulary` — kata + arti + contoh kalimat + level JLPT
-- `kanji` — kanji + radicals + readings + meaning + level
-- `radicals` — komponen kanji
+## Initial Database Structure
+- `kana` — hiragana & katakana (character, romaji, stroke order, audio)
+- `vocabulary` — word + translation + example sentences + JLPT level
+- `kanji` — kanji + radicals + readings + meaning + JLPT level
+- `radicals` — kanji components
 - `user_progress` — SRS state, review history
-- `quiz_questions` — soal kuis per kategori
-- `user_goal` — target JLPT, timeline, daily plan
+- `quiz_questions` — quiz questions per category
+- `user_goal` — JLPT target, timeline, daily plan
