@@ -12,6 +12,17 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # State management
+  flutter_riverpod: ^2.5.1
+
+  # Local database (SQLite)
+  sqflite: ^2.3.3
+  path: ^1.9.0
+  path_provider: ^2.1.4
+
+  # Lightweight key-value store for settings/progress
+  shared_preferences: ^2.3.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -20,9 +31,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  fonts:
-    - family: NotoSansJP
-      fonts:
-        - asset: assets/fonts/NotoSansJP-Regular.ttf
-        - asset: assets/fonts/NotoSansJP-Bold.ttf
-          weight: 700
+  # Fonts will be added once the kana UI lands.
+  # Noto Sans JP files go in assets/fonts/ and are declared here.
