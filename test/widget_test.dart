@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -52,6 +53,8 @@ void main() {
     expect(repo.goal?.timelineMonths, 6);
     expect(repo.goal?.startingPoint, 'Know hiragana');
     expect(find.text('おかえり。'), findsOneWidget);
+
+    await _disposeApp(tester);
   });
 
   testWidgets('App renders home when a saved goal exists', (tester) async {
@@ -60,6 +63,8 @@ void main() {
 
     expect(find.text('おかえり。'), findsOneWidget);
     expect(find.text('Build your daily path'), findsNothing);
+
+    await _disposeApp(tester);
   });
 }
 
@@ -71,7 +76,12 @@ Future<void> _pumpApp(WidgetTester tester, _FakeUserGoalRepository repo) async {
     ),
   );
   await tester.pump();
-  await tester.pump(const Duration(milliseconds: 260));
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
+Future<void> _disposeApp(WidgetTester tester) async {
+  await tester.pumpWidget(const SizedBox.shrink());
+  await tester.pump(const Duration(seconds: 1));
 }
 
 UserGoal _goal() {

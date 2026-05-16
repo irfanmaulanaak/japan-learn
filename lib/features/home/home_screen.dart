@@ -565,7 +565,7 @@ class _GoalCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 18),
-          _StagePath(stages: _stages),
+          const _StagePath(stages: _stages),
           const SizedBox(height: 18),
           _GoalProgressBar(progress: progress),
           const SizedBox(height: 8),

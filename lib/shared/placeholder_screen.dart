@@ -22,9 +22,9 @@ class PlaceholderScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'COMING SOON',
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.inkMuted,
                   fontSize: 11,
                   fontWeight: FontWeight.w800,
