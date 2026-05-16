@@ -3,13 +3,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../seed/kana_seed.dart';
+import '../seed/kanji_seed.dart';
+import '../seed/vocabulary_seed.dart';
 
 class DatabaseHelper {
   DatabaseHelper._();
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const _dbName = 'japan_learn.db';
-  static const _dbVersion = 4;
+  static const _dbVersion = 6;
 
   Database? _db;
 
@@ -40,18 +42,30 @@ class DatabaseHelper {
     await _createUserGoalTable(db);
     await _createUserProgressTable(db);
     await _createKanaProgressTable(db);
+    await _createVocabularyTable(db);
+    await _createKanjiTable(db);
+    await _createCardProgressTable(db);
+    await _createBookmarkTable(db);
+    await _createBadgeTable(db);
     await _seedKana(db);
+    await _seedVocabulary(db);
+    await _seedKanji(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await _createUserGoalTable(db);
+    if (oldVersion < 2) await _createUserGoalTable(db);
+    if (oldVersion < 3) await _createUserProgressTable(db);
+    if (oldVersion < 4) await _createKanaProgressTable(db);
+    if (oldVersion < 5) {
+      await _createVocabularyTable(db);
+      await _createKanjiTable(db);
+      await _createCardProgressTable(db);
+      await _seedVocabulary(db);
+      await _seedKanji(db);
     }
-    if (oldVersion < 3) {
-      await _createUserProgressTable(db);
-    }
-    if (oldVersion < 4) {
-      await _createKanaProgressTable(db);
+    if (oldVersion < 6) {
+      await _createBookmarkTable(db);
+      await _createBadgeTable(db);
     }
   }
 
@@ -103,10 +117,97 @@ class DatabaseHelper {
     ''');
   }
 
+  Future<void> _createVocabularyTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE vocabulary (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        word TEXT NOT NULL,
+        reading TEXT NOT NULL,
+        meaning TEXT NOT NULL,
+        part_of_speech TEXT NOT NULL,
+        level TEXT NOT NULL,
+        example_ja TEXT,
+        example_en TEXT
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX idx_vocabulary_level ON vocabulary(level)',
+    );
+  }
+
+  Future<void> _createKanjiTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE kanji (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        character TEXT NOT NULL,
+        meaning TEXT NOT NULL,
+        onyomi TEXT,
+        kunyomi TEXT,
+        radicals TEXT,
+        strokes INTEGER NOT NULL,
+        level TEXT NOT NULL
+      )
+    ''');
+    await db.execute('CREATE INDEX idx_kanji_level ON kanji(level)');
+  }
+
+  Future<void> _createCardProgressTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE card_progress (
+        deck TEXT NOT NULL,
+        item_id INTEGER NOT NULL,
+        easiness REAL NOT NULL,
+        interval_days INTEGER NOT NULL,
+        repetition_count INTEGER NOT NULL,
+        lapse_count INTEGER NOT NULL,
+        due_at TEXT NOT NULL,
+        last_reviewed_at TEXT,
+        PRIMARY KEY (deck, item_id)
+      )
+    ''');
+  }
+
+  Future<void> _createBookmarkTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE bookmark (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kind TEXT NOT NULL,
+        item_id INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        UNIQUE(kind, item_id) ON CONFLICT IGNORE
+      )
+    ''');
+  }
+
+  Future<void> _createBadgeTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE badge (
+        code TEXT PRIMARY KEY,
+        earned_at TEXT NOT NULL
+      )
+    ''');
+  }
+
   Future<void> _seedKana(Database db) async {
     final batch = db.batch();
     for (final k in kanaSeedData) {
       batch.insert('kana', k.toMap());
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> _seedVocabulary(Database db) async {
+    final batch = db.batch();
+    for (final v in vocabularySeedData) {
+      batch.insert('vocabulary', v.toMap());
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> _seedKanji(Database db) async {
+    final batch = db.batch();
+    for (final k in kanjiSeedData) {
+      batch.insert('kanji', k.toMap());
     }
     await batch.commit(noResult: true);
   }

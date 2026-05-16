@@ -5,20 +5,22 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../data/models/kana.dart';
 import '../../theme/app_theme.dart';
 
-class HiraganaQuizView extends StatefulWidget {
+class KanaQuizView extends StatefulWidget {
+  final String type;
   final List<Kana> kana;
   final Future<void> Function(Kana item, bool correct) onReview;
-  const HiraganaQuizView({
+  const KanaQuizView({
     super.key,
+    required this.type,
     required this.kana,
     required this.onReview,
   });
 
   @override
-  State<HiraganaQuizView> createState() => _HiraganaQuizViewState();
+  State<KanaQuizView> createState() => _KanaQuizViewState();
 }
 
-class _HiraganaQuizViewState extends State<HiraganaQuizView> {
+class _KanaQuizViewState extends State<KanaQuizView> {
   int _index = 0;
   String? _selected;
   bool _saving = false;
@@ -33,12 +35,14 @@ class _HiraganaQuizViewState extends State<HiraganaQuizView> {
     final answer = _kanaToRomaji ? item.romaji : item.character;
     final options = _options(item);
     final answered = _selected != null;
+    final scriptName =
+        widget.type == 'hiragana' ? 'hiragana' : 'katakana';
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
       children: [
         Text(
-          _kanaToRomaji ? 'Choose the romaji' : 'Choose the hiragana',
+          _kanaToRomaji ? 'Choose the romaji' : 'Choose the $scriptName',
           style: const TextStyle(
             color: AppColors.inkMuted,
             fontSize: 11,

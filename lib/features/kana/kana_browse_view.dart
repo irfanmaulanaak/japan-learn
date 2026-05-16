@@ -5,10 +5,10 @@ import '../../data/models/kana.dart';
 import '../../data/models/kana_progress.dart';
 import '../../theme/app_theme.dart';
 
-class HiraganaBrowseView extends StatelessWidget {
+class KanaBrowseView extends StatelessWidget {
   final List<Kana> kana;
   final Map<int, KanaProgress> progress;
-  const HiraganaBrowseView({
+  const KanaBrowseView({
     super.key,
     required this.kana,
     required this.progress,

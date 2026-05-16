@@ -6,11 +6,11 @@ import '../../data/models/kana.dart';
 import '../../data/models/kana_progress.dart';
 import '../../theme/app_theme.dart';
 
-class HiraganaFlashcardView extends StatefulWidget {
+class KanaFlashcardView extends StatefulWidget {
   final List<Kana> kana;
   final Map<int, KanaProgress> progress;
   final Future<void> Function(Kana item, bool correct) onReview;
-  const HiraganaFlashcardView({
+  const KanaFlashcardView({
     super.key,
     required this.kana,
     required this.progress,
@@ -18,10 +18,10 @@ class HiraganaFlashcardView extends StatefulWidget {
   });
 
   @override
-  State<HiraganaFlashcardView> createState() => _HiraganaFlashcardViewState();
+  State<KanaFlashcardView> createState() => _KanaFlashcardViewState();
 }
 
-class _HiraganaFlashcardViewState extends State<HiraganaFlashcardView> {
+class _KanaFlashcardViewState extends State<KanaFlashcardView> {
   int _index = 0;
   bool _revealed = false;
   bool _saving = false;
