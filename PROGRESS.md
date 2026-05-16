@@ -1,0 +1,130 @@
+# Progress
+
+Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; this file is the current state.
+
+## Status
+**Phase 1 — MVP** · dashboard + onboarding scaffolded. No real learning flows yet.
+
+## Done
+
+### Foundation
+- [x] Flutter project initialized (Android + iOS + macOS + Linux + Windows + web targets)
+- [x] Riverpod + sqflite + shared_preferences wired
+- [x] GitHub Actions APK build workflow
+- [x] Android org renamed to `dev.irfanmaulanaak`
+
+### Data layer
+- [x] SQLite database helper (`lib/data/database/database_helper.dart`)
+- [x] Kana model + repository (`lib/data/models/kana.dart`, `lib/data/repositories/kana_repository.dart`)
+- [x] Hiragana seed — 46 characters loaded on first launch (`lib/data/seed/kana_seed.dart`)
+- [x] Riverpod providers for kana lists (`lib/data/providers.dart`)
+- [x] User goal table + repository (`lib/data/models/user_goal.dart`, `lib/data/repositories/user_goal_repository.dart`)
+- [x] Riverpod provider for first-launch goal gate
+
+### Theme
+- [x] Design language: "playful but refined" (Notion / Reflect / refined-Duolingo)
+- [x] Persimmon `#E8763E` as the single brand accent
+- [x] Plus Jakarta Sans via `google_fonts`
+- [x] `AppColors` tokens (`lib/theme/app_theme.dart`)
+- [x] Material 3 theme with no card borders, no AppBar elevation
+
+### App shell
+- [x] Bottom nav: Home / Learn / Dictionary / You (`lib/shell/app_shell.dart`)
+- [x] Animated tab switch (fade + 2% slide)
+- [x] Tab icons spring-scale on selection
+- [x] Haptic feedback on tab change
+
+### Home dashboard (UI complete, data mocked)
+- [x] Greeting — `DAY N` + `おかえり。`
+- [x] Hero stats row — XP / streak / modules done (typographic, hairline dividers)
+- [x] Streak flame breathing animation
+- [x] Today's plan card — persimmon hero, dynamic `Start`/`Continue` CTA
+- [x] This week strip — 7 dots, today larger + ringed
+- [x] Goal card — JLPT target, stage indicator, stage path dots, day progress bar
+- [x] Review card — SRS due CTA (hidden when 0)
+- [x] Recent activity rows — last 3 lessons with XP
+- [x] Staggered section entry animations
+
+### Learn tab (UI complete, data mocked)
+- [x] Module list — Hiragana / Katakana / Kanji / Vocabulary
+- [x] Hiragana shows real seed count from DB
+- [x] Locked state with lock icon
+- [x] Hairline row separators
+
+### Motion vocabulary validated
+- [x] Spring squish on taps
+- [x] Counter rollup (slide + bounce)
+- [x] Confetti + celebration overlay (kept for later use)
+- [x] Haptic feedback patterns
+
+### Onboarding
+- [x] Welcome screen
+- [x] Q1 target JLPT level (N5 / N4 / N3 / N2 / N1)
+- [x] Q2 timeline (3 months / 6 months / 1 year / custom months)
+- [x] Q3 starting point
+- [x] Generated daily kanji / vocab / review plan from answers
+- [x] Persisted goal to `user_goal`
+- [x] First-launch gate shows onboarding when no `user_goal` row exists
+
+## Mocked (needs real data)
+These are hardcoded in the UI today. Will be replaced when the backing flows ship.
+
+- XP value (currently `120`)
+- Streak count (currently `3`)
+- Modules done count (currently `0/4`)
+- Day number (currently `3`)
+- Today's lesson + progress (currently `Learn 5 hiragana · 2/5`)
+- Week strip days (currently `[T, T, F, F, F, F, F]`)
+- Goal stage data (currently `JLPT N5 · stage 2 of 5 · Hiragana full`)
+- Saved onboarding goal exists, but Home dashboard goal card is still mocked
+- Review due count (currently `12`)
+- Recent activity list (3 hardcoded entries)
+
+## Next up
+
+### 1. User state & dashboard wiring
+- `user_progress` table + repository
+- Riverpod providers for current progress state
+- Wire Home dashboard goal card to saved `user_goal`
+- Wire Today's plan to generated daily goals
+- Wire Home dashboard stats to real values
+
+### 2. Hiragana learning module (first real feature)
+- Browse all 46 in a grid
+- Flashcard study mode (character → romaji)
+- Quiz mode (kana → romaji, romaji → kana)
+- Per-character SRS state tracking (SM-2)
+- "Today's lesson" routes here
+
+### Later (per PLAN.md)
+- Katakana (same pattern as hiragana)
+- Kanji by radicals
+- Vocabulary
+- Offline dictionary
+- Shadowing
+- JLPT mock test
+
+## Open questions
+- Japanese font: ship Zen Kaku Gothic / Noto Sans JP as bundled asset, or stay on OS fallback until kanji UI lands?
+- Audio: ship MP3s per kana in APK, or generate on-device via TTS?
+- "Modules done" — does a module count as done at 100% mastery, or just touched?
+
+## File map
+```
+lib/
+├── main.dart                        — app entry, wires theme + shell
+├── theme/app_theme.dart             — AppColors + ThemeData
+├── shell/app_shell.dart             — bottom nav + animated switcher
+├── shared/placeholder_screen.dart   — coming-soon placeholder
+├── data/
+│   ├── providers.dart               — Riverpod providers
+│   ├── database/database_helper.dart
+│   ├── models/kana.dart
+│   ├── repositories/kana_repository.dart
+│   └── seed/kana_seed.dart
+└── features/
+    ├── home/home_screen.dart        — dashboard (greeting / stats / today / week / goal / review / recent)
+    ├── learn/learn_screen.dart      — module list
+    ├── dictionary/dictionary_screen.dart  — placeholder
+    └── profile/profile_screen.dart  — placeholder
+```
