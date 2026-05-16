@@ -5,7 +5,7 @@ A cross-platform Japanese language learning app (Android, iOS, macOS, Windows, L
 
 ## Tech Stack
 - **Framework:** Flutter (Dart) — cross-platform
-- **State Management:** BLoC / Riverpod (TBD)
+- **State Management:** Riverpod
 - **Local Database:** SQLite (sqflite / drift)
 - **SRS Algorithm:** SM-2 (used by Anki)
 - **Local Storage:** Hive / SharedPreferences for settings & progress

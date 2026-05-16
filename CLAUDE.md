@@ -1,1 +1,1 @@
-CRITICAL: Read AGENTS.md for project instructions! Also read PLAN.md for architecture decisions.
+CRITICAL: Read AGENTS.md for project instructions!

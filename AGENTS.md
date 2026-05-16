@@ -13,7 +13,7 @@
 
 ## Tech Stack
 - **Framework:** Flutter (Dart)
-- **State Management:** BLoC / Riverpod (TBD — decide during coding phase)
+- **State Management:** Riverpod (`flutter_riverpod`)
 - **Local DB:** SQLite via drift/sqflite
 - **SRS:** SM-2 algorithm
 - **Platforms:** Android (primary), iOS, macOS, Windows, Linux
