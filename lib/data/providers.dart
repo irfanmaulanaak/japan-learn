@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'database/database_helper.dart';
-import 'models/badge.dart';
 import 'models/bookmark.dart';
 import 'models/card_progress.dart';
 import 'models/kana.dart';

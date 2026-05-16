@@ -284,11 +284,14 @@ class _BigStat extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Flexible(
-              child: Text(
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.bottomLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
                 value,
                 maxLines: 1,
                 overflow: TextOverflow.fade,
@@ -301,12 +304,15 @@ class _BigStat extends StatelessWidget {
                   height: 1,
                 ),
               ),
-            ),
-            if (trailing != null) ...[
-              const SizedBox(width: 6),
-              Padding(padding: const EdgeInsets.only(bottom: 2), child: trailing),
+              if (trailing != null) ...[
+                const SizedBox(width: 6),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 2),
+                  child: trailing,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -605,22 +611,35 @@ class _GoalCard extends StatelessWidget {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                level,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.3,
-                  color: AppColors.ink,
+              Flexible(
+                child: Text(
+                  level,
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                    color: AppColors.ink,
+                  ),
                 ),
               ),
-              Text(
-                'target $target',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.inkMuted,
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  'target $target',
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.inkMuted,
+                  ),
                 ),
               ),
             ],

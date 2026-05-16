@@ -2,7 +2,7 @@ import '../models/kanji.dart';
 
 // N5 kanji set (~80 of the official ~103). Radicals are simplified labels
 // useful for grouping in the radical browser; not full Kangxi taxonomy.
-final List<Kanji> kanjiSeedData = const [
+const List<Kanji> kanjiSeedData = [
   Kanji(
     character: '一',
     meaning: 'one',

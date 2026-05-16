@@ -24,7 +24,7 @@ class KanaBrowseView extends StatelessWidget {
         crossAxisCount: 5,
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
-        childAspectRatio: 0.78,
+        childAspectRatio: 0.7,
       ),
       itemCount: kana.length,
       itemBuilder: (context, index) {
@@ -54,49 +54,57 @@ class _KanaTile extends StatelessWidget {
     final label = _statusLabel();
     final tint = _statusTint();
 
+    // FittedBox scales down only when the inner column doesn't fit, so
+    // we never bleed across the bottom edge on tight screens.
     return Container(
       decoration: BoxDecoration(
         color: tint,
         borderRadius: BorderRadius.circular(16),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            item.character,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: AppColors.ink,
-              height: 1,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      alignment: Alignment.center,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              item.character,
+              style: const TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+                height: 1,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            item.romaji,
-            maxLines: 1,
-            overflow: TextOverflow.fade,
-            softWrap: false,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkSoft,
+            const SizedBox(height: 6),
+            Text(
+              item.romaji,
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkSoft,
+              ),
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.fade,
-            softWrap: false,
-            style: const TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w800,
-              color: AppColors.inkMuted,
+            const SizedBox(height: 3),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.fade,
+              softWrap: false,
+              style: const TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w800,
+                color: AppColors.inkMuted,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

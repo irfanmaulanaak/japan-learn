@@ -79,18 +79,20 @@ class _JlptMockScreenState extends ConsumerState<JlptMockScreen> {
         body: Center(child: Text('No questions available for this level.')),
       );
     }
-    if (_finished) return _Results(
-      total: _questions.length,
-      correct: _correct,
-      onClose: () => Navigator.of(context).pop(),
-    );
+    if (_finished) {
+      return _Results(
+        total: _questions.length,
+        correct: _correct,
+        onClose: () => Navigator.of(context).pop(),
+      );
+    }
 
     final q = _questions[_index];
     final picked = _picks[_index];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('$_level Mock'),
+        title: const Text('$_level Mock'),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16, top: 14),

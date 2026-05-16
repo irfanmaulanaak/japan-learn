@@ -177,19 +177,19 @@ class _Empty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
+    return const Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.check_circle_outline_rounded,
               color: AppColors.success,
               size: 56,
             ),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12),
+            Text(
               'Inbox zero.',
               style: TextStyle(
                 fontSize: 22,
@@ -198,8 +198,8 @@ class _Empty extends StatelessWidget {
                 color: AppColors.ink,
               ),
             ),
-            const SizedBox(height: 6),
-            const Text(
+            SizedBox(height: 6),
+            Text(
               'Nothing due right now. Come back when SRS schedules more.',
               textAlign: TextAlign.center,
               style: TextStyle(

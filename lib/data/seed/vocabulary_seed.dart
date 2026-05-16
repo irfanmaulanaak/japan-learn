@@ -1,7 +1,7 @@
 import '../models/vocabulary.dart';
 
 // Core N5 vocabulary seed. Self-curated set of ~100 high-frequency words.
-final List<Vocabulary> vocabularySeedData = const [
+const List<Vocabulary> vocabularySeedData = [
   Vocabulary(
     word: '私',
     reading: 'わたし',

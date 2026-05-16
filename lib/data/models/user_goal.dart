@@ -93,25 +93,6 @@ class UserGoal {
       behindByDays: delta,
     );
   }
-}
-
-class AdaptiveDailyPlan {
-  final int kanji;
-  final int vocab;
-  final int reviewMinutes;
-  final int behindByDays;
-  const AdaptiveDailyPlan({
-    required this.kanji,
-    required this.vocab,
-    required this.reviewMinutes,
-    required this.behindByDays,
-  });
-
-  String get statusLabel {
-    if (behindByDays >= 3) return 'Catching up';
-    if (behindByDays <= -3) return 'Ahead of plan';
-    return 'On track';
-  }
 
   static const _kanjiTotals = {
     'N5': 100,
@@ -135,4 +116,23 @@ class AdaptiveDailyPlan {
     'Some kanji': 0.18,
     'Returning learner': 0.28,
   };
+}
+
+class AdaptiveDailyPlan {
+  final int kanji;
+  final int vocab;
+  final int reviewMinutes;
+  final int behindByDays;
+  const AdaptiveDailyPlan({
+    required this.kanji,
+    required this.vocab,
+    required this.reviewMinutes,
+    required this.behindByDays,
+  });
+
+  String get statusLabel {
+    if (behindByDays >= 3) return 'Catching up';
+    if (behindByDays <= -3) return 'Ahead of plan';
+    return 'On track';
+  }
 }
