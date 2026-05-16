@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'data/providers.dart';
 
 void main() {
-  runApp(const JapanLearnApp());
+  runApp(const ProviderScope(child: JapanLearnApp()));
 }
 
 class JapanLearnApp extends StatelessWidget {
@@ -15,25 +18,32 @@ class JapanLearnApp extends StatelessWidget {
       theme: ThemeData(
         colorSchemeSeed: const Color(0xFFD32F2F),
         useMaterial3: true,
-        fontFamily: 'NotoSansJP',
       ),
       home: const HomeScreen(),
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final hiragana = ref.watch(hiraganaListProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Japan Learn'),
         centerTitle: true,
       ),
-      body: const Center(
-        child: Text('Welcome to Japan Learn!'),
+      body: hiragana.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (list) => Center(
+          child: Text(
+            'DB OK — loaded ${list.length} hiragana',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+        ),
       ),
     );
   }

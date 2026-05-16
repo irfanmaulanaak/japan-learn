@@ -1,4 +1,4 @@
-package com.example.japanlearn
+package dev.irfanmaulanaak.japan_learn
 
 import io.flutter.embedding.android.FlutterActivity
 
