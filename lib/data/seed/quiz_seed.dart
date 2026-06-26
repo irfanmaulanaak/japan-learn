@@ -3,7 +3,7 @@
 class QuizQuestion {
   final String id;
   final String level;
-  final String section; // 'vocab' | 'kanji' | 'grammar'
+  final String section; // 'vocab' | 'kanji' | 'grammar' | 'reading'
   final String prompt;
   final List<String> choices;
   final int answerIndex;
@@ -19,6 +19,17 @@ class QuizQuestion {
     required this.explanation,
   });
 }
+
+/// Exam section order + display names. The mock groups questions into these
+/// blocks (like a real JLPT paper) and reports a per-section score.
+const List<String> quizSectionOrder = ['vocab', 'kanji', 'grammar', 'reading'];
+
+const Map<String, String> quizSectionNames = {
+  'vocab': 'Vocabulary',
+  'kanji': 'Kanji',
+  'grammar': 'Grammar',
+  'reading': 'Reading',
+};
 
 const List<QuizQuestion> quizSeed = [
   QuizQuestion(
@@ -98,12 +109,7 @@ const List<QuizQuestion> quizSeed = [
     level: 'N5',
     section: 'vocab',
     prompt: 'How do you say "I drink water"?',
-    choices: [
-      '水を飲みます',
-      'ご飯を食べます',
-      '本を読みます',
-      '学校へ行きます',
-    ],
+    choices: ['水を飲みます', 'ご飯を食べます', '本を読みます', '学校へ行きます'],
     answerIndex: 0,
     explanation: '水 (water) + を + 飲みます (drink).',
   ),
@@ -114,7 +120,144 @@ const List<QuizQuestion> quizSeed = [
     prompt: 'Which reading of 月 means "month"?',
     choices: ['つき', 'ゲツ/ガツ', 'ひ', 'ニチ'],
     answerIndex: 1,
-    explanation:
-        '月 has on\'yomi ゲツ/ガツ used in compounds like 一月 (January).',
+    explanation: '月 has on\'yomi ゲツ/ガツ used in compounds like 一月 (January).',
+  ),
+
+  // --- Vocabulary ---
+  QuizQuestion(
+    id: 'n5_v5',
+    level: 'N5',
+    section: 'vocab',
+    prompt: '「ねこ」 means…',
+    choices: ['dog', 'cat', 'bird', 'fish'],
+    answerIndex: 1,
+    explanation: 'ねこ (猫) = cat. いぬ = dog.',
+  ),
+  QuizQuestion(
+    id: 'n5_v6',
+    level: 'N5',
+    section: 'vocab',
+    prompt: 'What is the opposite of 大きい (big)?',
+    choices: ['高い', '小さい', '新しい', '多い'],
+    answerIndex: 1,
+    explanation: '小さい (ちいさい) = small, the opposite of 大きい.',
+  ),
+  QuizQuestion(
+    id: 'n5_v7',
+    level: 'N5',
+    section: 'vocab',
+    prompt: 'お金 (おかね) means…',
+    choices: ['time', 'money', 'water', 'book'],
+    answerIndex: 1,
+    explanation: 'お金 = money.',
+  ),
+  QuizQuestion(
+    id: 'n5_v8',
+    level: 'N5',
+    section: 'vocab',
+    prompt: '毎朝コーヒーを ___ 。 (drink coffee every morning)',
+    choices: ['のみます', 'たべます', 'よみます', 'ききます'],
+    answerIndex: 0,
+    explanation: 'drinks → のむ → のみます。 たべる is "eat".',
+  ),
+
+  // --- Kanji ---
+  QuizQuestion(
+    id: 'n5_k4',
+    level: 'N5',
+    section: 'kanji',
+    prompt: 'How do you read 川?',
+    choices: ['やま', 'かわ', 'た', 'みず'],
+    answerIndex: 1,
+    explanation: '川 = かわ (river).',
+  ),
+  QuizQuestion(
+    id: 'n5_k5',
+    level: 'N5',
+    section: 'kanji',
+    prompt: 'Which kanji means "fire"?',
+    choices: ['火', '水', '木', '金'],
+    answerIndex: 0,
+    explanation: '火 = fire (か / ひ).',
+  ),
+  QuizQuestion(
+    id: 'n5_k6',
+    level: 'N5',
+    section: 'kanji',
+    prompt: 'Which kanji means "person"?',
+    choices: ['入', '人', '八', '大'],
+    answerIndex: 1,
+    explanation: '人 = person. 入 (enter) looks similar — watch the stroke.',
+  ),
+  QuizQuestion(
+    id: 'n5_k7',
+    level: 'N5',
+    section: 'kanji',
+    prompt: 'How do you read 中 in 中国 (China)?',
+    choices: ['ちゅう', 'なか', 'じん', 'こく'],
+    answerIndex: 0,
+    explanation: '中国 = ちゅうごく; 中 here is ちゅう. Alone it is なか (inside).',
+  ),
+
+  // --- Grammar ---
+  QuizQuestion(
+    id: 'n5_g4',
+    level: 'N5',
+    section: 'grammar',
+    prompt: '学校 ___ 行きます。 (go to school)',
+    choices: ['を', 'へ', 'が', 'の'],
+    answerIndex: 1,
+    explanation: 'へ (or に) marks the destination of movement.',
+  ),
+  QuizQuestion(
+    id: 'n5_g5',
+    level: 'N5',
+    section: 'grammar',
+    prompt: '机の上 ___ 本があります。 (a book is on the desk)',
+    choices: ['に', 'で', 'を', 'へ'],
+    answerIndex: 0,
+    explanation: 'に marks where something exists (あります / います).',
+  ),
+  QuizQuestion(
+    id: 'n5_g6',
+    level: 'N5',
+    section: 'grammar',
+    prompt: '日本へ行き ___ です。 (I want to go to Japan)',
+    choices: ['たい', 'ます', 'て', 'た'],
+    answerIndex: 0,
+    explanation: 'verb stem + たいです expresses "want to ~".',
+  ),
+  QuizQuestion(
+    id: 'n5_g7',
+    level: 'N5',
+    section: 'grammar',
+    prompt: 'りんご ___ みかんを買いました。 (apples and oranges)',
+    choices: ['と', 'も', 'は', 'を'],
+    answerIndex: 0,
+    explanation: 'と joins nouns: "A と B" = "A and B".',
+  ),
+
+  // --- Reading (short passages) ---
+  QuizQuestion(
+    id: 'n5_r1',
+    level: 'N5',
+    section: 'reading',
+    prompt:
+        '私は毎朝6時に起きます。それからご飯を食べます。\n'
+        'Q: 何時に起きますか。 (What time do they wake up?)',
+    choices: ['5時', '6時', '7時', '8時'],
+    answerIndex: 1,
+    explanation: '6時に起きます = wakes up at 6 o\'clock.',
+  ),
+  QuizQuestion(
+    id: 'n5_r2',
+    level: 'N5',
+    section: 'reading',
+    prompt:
+        '昨日は雨でした。今日は晴れです。\n'
+        'Q: 今日の天気は？ (What is today\'s weather?)',
+    choices: ['雨 (rain)', '雪 (snow)', '晴れ (sunny)', '曇り (cloudy)'],
+    answerIndex: 2,
+    explanation: '今日は晴れです = today is sunny. 昨日 (yesterday) was rain.',
   ),
 ];

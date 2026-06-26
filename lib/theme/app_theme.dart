@@ -29,15 +29,22 @@ class AppColors {
   static const hairline = Color(0xFFEFECE6);
 }
 
+/// Latin glyphs render in Plus Jakarta Sans; anything it lacks (i.e. all
+/// Japanese) falls through to the bundled Noto Sans JP so kana/kanji look the
+/// same on every device instead of leaning on the OS fallback.
+const _jpFallback = ['NotoSansJP'];
+
 ThemeData buildAppTheme() {
   final base = GoogleFonts.plusJakartaSansTextTheme();
   final textTheme = base.apply(
     bodyColor: AppColors.ink,
     displayColor: AppColors.ink,
+    fontFamilyFallback: _jpFallback,
   );
 
   return ThemeData(
     useMaterial3: true,
+    fontFamilyFallback: _jpFallback,
     scaffoldBackgroundColor: AppColors.bg,
     colorScheme: const ColorScheme.light(
       primary: AppColors.accent,
@@ -48,13 +55,31 @@ ThemeData buildAppTheme() {
       error: AppColors.danger,
     ),
     textTheme: textTheme.copyWith(
-      displayLarge: textTheme.displayLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -1),
-      headlineMedium: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.5),
-      titleLarge: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.3),
+      displayLarge: textTheme.displayLarge?.copyWith(
+        fontWeight: FontWeight.w800,
+        letterSpacing: -1,
+      ),
+      headlineMedium: textTheme.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.5,
+      ),
+      titleLarge: textTheme.titleLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+      ),
       titleMedium: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-      bodyLarge: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, color: AppColors.inkSoft),
-      bodyMedium: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500, color: AppColors.inkSoft),
-      labelLarge: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: 0.2),
+      bodyLarge: textTheme.bodyLarge?.copyWith(
+        fontWeight: FontWeight.w500,
+        color: AppColors.inkSoft,
+      ),
+      bodyMedium: textTheme.bodyMedium?.copyWith(
+        fontWeight: FontWeight.w500,
+        color: AppColors.inkSoft,
+      ),
+      labelLarge: textTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.2,
+      ),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.bg,
@@ -68,7 +93,7 @@ ThemeData buildAppTheme() {
         fontWeight: FontWeight.w800,
         fontSize: 22,
         letterSpacing: -0.3,
-      ),
+      ).copyWith(fontFamilyFallback: _jpFallback),
     ),
     pageTransitionsTheme: const PageTransitionsTheme(
       builders: {

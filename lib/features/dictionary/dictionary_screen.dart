@@ -7,6 +7,7 @@ import '../../data/models/kanji.dart';
 import '../../data/models/vocabulary.dart';
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
+import '../kanji/kanji_detail_screen.dart';
 
 class DictionaryScreen extends ConsumerStatefulWidget {
   const DictionaryScreen({super.key});
@@ -125,17 +126,13 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
         if (_words.isNotEmpty) ...[
           const _SectionLabel('Vocabulary'),
           const SizedBox(height: 8),
-          ..._words.map(
-            (w) => _VocabRow(word: w, ref: ref),
-          ),
+          ..._words.map((w) => _VocabRow(word: w, ref: ref)),
         ],
         if (_kanji.isNotEmpty) ...[
           const SizedBox(height: 24),
           const _SectionLabel('Kanji'),
           const SizedBox(height: 8),
-          ..._kanji.map(
-            (k) => _KanjiRow(kanji: k, ref: ref),
-          ),
+          ..._kanji.map((k) => _KanjiRow(kanji: k, ref: ref)),
         ],
       ],
     );
@@ -235,6 +232,10 @@ class _KanjiRow extends StatelessWidget {
       kind: Bookmark.kindKanji,
       itemId: kanji.id!,
       ref: ref,
+      onTap:
+          () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => KanjiDetailScreen(kanji: kanji)),
+          ),
     );
   }
 }
@@ -247,6 +248,7 @@ class _ResultRow extends StatefulWidget {
   final String kind;
   final int itemId;
   final WidgetRef ref;
+  final VoidCallback? onTap;
   const _ResultRow({
     required this.headline,
     required this.subtitle,
@@ -255,6 +257,7 @@ class _ResultRow extends StatefulWidget {
     required this.kind,
     required this.itemId,
     required this.ref,
+    this.onTap,
   });
 
   @override
@@ -291,71 +294,74 @@ class _ResultRowState extends State<_ResultRow> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 56,
-            child: Text(
-              widget.headline,
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: AppColors.ink,
-                height: 1.05,
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 56,
+              child: Text(
+                widget.headline,
+                style: const TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                  height: 1.05,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (widget.subtitle.isNotEmpty)
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (widget.subtitle.isNotEmpty)
+                    Text(
+                      widget.subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.inkSoft,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                   Text(
-                    widget.subtitle,
+                    widget.meaning,
                     style: const TextStyle(
-                      fontSize: 12,
-                      color: AppColors.inkSoft,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                      color: AppColors.ink,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.1,
                     ),
                   ),
-                Text(
-                  widget.meaning,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.ink,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.1,
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.meta,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: AppColors.inkMuted,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.4,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  widget.meta,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppColors.inkMuted,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          IconButton(
-            onPressed: _checked ? _toggle : null,
-            icon: Icon(
-              _saved ? Icons.star_rounded : Icons.star_outline_rounded,
-              color: _saved ? AppColors.accent : AppColors.inkMuted,
+            IconButton(
+              onPressed: _checked ? _toggle : null,
+              icon: Icon(
+                _saved ? Icons.star_rounded : Icons.star_outline_rounded,
+                color: _saved ? AppColors.accent : AppColors.inkMuted,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     ).animate().fadeIn(duration: 220.ms);
   }

@@ -34,9 +34,38 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
 
-  # Fonts will be added once the kana UI lands.
-  # Noto Sans JP files go in assets/fonts/ and are declared here.
+  # Bundled Japanese font so kana/kanji render consistently offline instead of
+  # relying on the OS fallback (which varies per device). Variable font (one
+  # file, all weights). Latin text still uses Plus Jakarta Sans; this is wired
+  # as a fallback in app_theme.dart so only Japanese glyphs use it.
+  fonts:
+    - family: NotoSansJP
+      fonts:
+        - asset: assets/fonts/NotoSansJP.ttf
+
+# App launcher icon (persimmon square + white あ). Source lives in assets/icon/.
+# Regenerate platform icons with: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon/app_icon.png"
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  # Foreground is opaque full-bleed (あ sits inside the adaptive safe zone), so
+  # the background colour only acts as a fallback.
+  adaptive_icon_background: "#E8763E"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
+  web:
+    generate: true
+    background_color: "#FBFAF7"
+    theme_color: "#E8763E"
+  macos:
+    generate: true
+  windows:
+    generate: true
+    icon_size: 256

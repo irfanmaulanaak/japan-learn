@@ -6,7 +6,6 @@ import '../../data/models/badge.dart';
 import '../../data/models/user_progress.dart';
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
-import '../anki/anki_import_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -61,36 +60,6 @@ class ProfileScreen extends ConsumerWidget {
                       const _SectionLabel('Badges'),
                       const SizedBox(height: 12),
                       _BadgeGrid(earned: earned),
-                      const SizedBox(height: 28),
-                      const _SectionLabel('Tools'),
-                      const SizedBox(height: 8),
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const Icon(
-                          Icons.upload_file_rounded,
-                          color: AppColors.ink,
-                        ),
-                        title: const Text(
-                          'Import Anki deck',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
-                          ),
-                        ),
-                        subtitle: const Text(
-                          'Bring .apkg cards into your SRS.',
-                          style: TextStyle(
-                            color: AppColors.inkMuted,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        onTap:
-                            () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const AnkiImportScreen(),
-                              ),
-                            ),
-                      ),
                     ],
                   ),
               loading: () => const _Loading(),

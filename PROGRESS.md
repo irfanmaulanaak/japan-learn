@@ -3,11 +3,13 @@
 Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; this file is the current state.
 
 ## Status
-**Phases 1–3 wired end-to-end.** All modules from `PLAN.md` are playable with seeded N5 content. Phase 4 ships an entry-point only (Anki import scaffolded, cloud sync intentionally deferred to honour the offline-first architecture).
+**Phases 1–3 wired end-to-end.** All modules from `PLAN.md` are playable with seeded N5 content. Phase 4 (Anki import / cloud sync) is intentionally deferred to honour the offline-first architecture — see Mocked / deferred.
 
 **P0 learning pass:** added on-device TTS audio across kana / vocab / kanji / shadowing / grammar; expanded kana with dakuten + handakuten + yoon; grew content to ~173 N5 vocab and ~103 N5 kanji; added a Grammar module (20 explained N5 patterns with audio examples); capped onboarding to N5 (N4–N1 marked "soon"). DB schema bumped to v7 (additive re-seed preserves existing SRS progress).
 
-**P1 stickiness pass (latest):** added real *recall/production* practice — a typed-romaji "Recall" tab for kana (auto-graded, accepts common spellings) and a JP→EN / EN→JP direction toggle on vocab & kanji flashcards (recall the word from its meaning). Made kanji-by-radical real: a radical glossary (plain-English component meanings) + a tappable kanji detail screen (component breakdown, readings, and example words that use the kanji, all with audio) reachable from both the radical grid and the kanji browse list. Streak polish: streak freezes auto-cover one missed day (earned every 5-day streak, capped at 2) so a single slip no longer resets a long streak; shown on the profile. DB schema bumped to v8 (adds `freeze_tokens`, default 0 — existing streaks unaffected).
+**P1 stickiness pass:** added real *recall/production* practice — a typed-romaji "Recall" tab for kana (auto-graded, accepts common spellings) and a JP→EN / EN→JP direction toggle on vocab & kanji flashcards (recall the word from its meaning). Made kanji-by-radical real: a radical glossary (plain-English component meanings) + a tappable kanji detail screen (component breakdown, readings, and example words that use the kanji, all with audio) reachable from both the radical grid and the kanji browse list. Streak polish: streak freezes auto-cover one missed day (earned every 5-day streak, capped at 2) so a single slip no longer resets a long streak; shown on the profile. DB schema bumped to v8 (adds `freeze_tokens`, default 0 — existing streaks unaffected).
+
+**P2 depth/fidelity pass (latest):** bundled **Noto Sans JP** (variable font, `assets/fonts/`) so all Japanese renders consistently offline instead of leaning on each device's OS fallback — wired as a font fallback in the theme (Latin stays Plus Jakarta Sans). Expanded the **JLPT mock** to 24 banked N5 questions grouped into real exam sections (Vocabulary → Kanji → Grammar → Reading), a timer that scales to the question count, and a per-section score breakdown on the results screen. **Anki import** entry point hidden (real `.apkg` parser is out of scope for an internal app; screen kept but unlinked). P1 follow-up: dictionary kanji results now tap through to the kanji detail screen.
 
 ## Done
 
@@ -29,7 +31,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] `reviewDueCountProvider` aggregates due cards across hiragana + katakana + vocab + kanji
 
 ### Theme & shell
-- [x] Persimmon `#E8763E` accent, Plus Jakarta Sans
+- [x] Persimmon `#E8763E` accent, Plus Jakarta Sans (Latin) + bundled Noto Sans JP (Japanese, offline fallback)
 - [x] `AppColors` tokens, Material 3 theme with no card borders, no AppBar elevation
 - [x] Bottom nav: Home / Learn / Dictionary / You with animated tab switch + haptics
 
@@ -73,6 +75,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 
 ### Dictionary
 - [x] Search across vocabulary AND kanji (word / reading / meaning / on / kun)
+- [x] Tap a kanji result to open its detail screen (component breakdown + example words)
 - [x] Bookmarks (star toggle) with dedicated `bookmark` table
 - [x] Bookmark list visible when search is empty
 
@@ -83,14 +86,13 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 ### Practice modules
 - [x] Reading — 4 graded passages (N5 / N4), translation toggle, XP reward on completion
 - [x] Shadowing — 7 sentence drill with self-rating (rough / OK / smooth) and XP
-- [x] JLPT mock test — N5 only, 5-minute timer, explanation per answer, pass/fail summary
+- [x] JLPT mock test — 24 banked N5 questions grouped into exam sections (Vocabulary → Kanji → Grammar → Reading), timer scaled to question count, per-question explanation, pass/fail summary with a per-section score breakdown
 
 ### Gamification
 - [x] 9 badges in `BadgeCatalog` (first review, hiragana/katakana mastered, streaks 3/7, XP 100/500, vocab/kanji counts)
 - [x] Snackbar toast when a badge is unlocked from any module
 - [x] Profile screen shows level card (`xp/100`), streak / streak-freezes / day / modules stats, badge grid (locked/unlocked)
 - [x] Streak freeze — auto-absorbs one missed day so a single slip doesn't reset the streak; earned every 5-day streak, capped at 2 (lives in `UserProgress`, persisted via `freeze_tokens`)
-- [x] Anki import entry point lives under Profile → Tools (parser still TODO)
 
 ### Onboarding
 - [x] Welcome screen
@@ -115,10 +117,10 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] `widget_test.dart` — boots onboarding, finishes flow, renders home
 
 ## Mocked / deferred
-- Anki `.apkg` import: entry point lives at Profile → Tools. Parser & file picker behind a TODO (the format is a SQLite-in-zip; needs an extra package).
-- Stroke-order animation for kanji: kanji module exposes radical decomposition; animated stroke order is intentionally out of scope (no animation library bundled).
+- Anki `.apkg` import: **entry point hidden** (removed from Profile → Tools). A real parser is out of scope for an internal app — the format is a SQLite-in-zip with media and needs an extra package + a destination-deck model. The placeholder screen (`anki_import_screen.dart`) is kept but unlinked so it can be wired up later.
+- Stroke-order animation for kanji: kanji module exposes radical decomposition + a detail screen; animated stroke order is intentionally out of scope (no animation library bundled).
 - Cross-device cloud sync: intentionally **cancelled** — `PLAN.md` mandates an offline-first architecture, sync would require a backend.
-- Japanese font: still OS fallback. Bundling Zen Kaku Gothic / Noto Sans JP can land any time without code changes (just add asset + declare in `pubspec.yaml`).
+- Japanese font: **done** — Noto Sans JP variable font bundled at `assets/fonts/NotoSansJP.ttf` (~9.5 MB) and wired as the theme font fallback. Future size optimisation: subset to the glyphs used by the bundled content (could drop it to ~150 KB) if APK size becomes a concern.
 - Audio: now on-device TTS (`ja-JP`, slowed rate). Pre-recorded native MP3s per item are still a nicer-quality follow-up but no longer blocking.
 - Shadowing record-and-compare: the line now plays via TTS so learners have audio to mimic; recording the learner's voice + A/B playback is deferred (needs a mic-record package + runtime permission, low ROI for an internal app).
 - Kanji mnemonics: instead of authoring 100+ prose stories, the detail screen teaches via the radical/component breakdown (each part's meaning) — the WaniKani-style scaffold a mnemonic is built from.
@@ -129,6 +131,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 
 ## File map
 ```
+assets/fonts/NotoSansJP.ttf               — bundled Japanese font (offline)
 lib/
 ├── main.dart
 ├── theme/app_theme.dart
