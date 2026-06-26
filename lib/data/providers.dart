@@ -19,9 +19,14 @@ import 'repositories/user_goal_repository.dart';
 import 'repositories/user_progress_repository.dart';
 import 'repositories/vocabulary_repository.dart';
 import 'services/lesson_recorder.dart';
+import 'services/tts_service.dart';
 
 final databaseHelperProvider = Provider<DatabaseHelper>((ref) {
   return DatabaseHelper.instance;
+});
+
+final ttsServiceProvider = Provider<TtsService>((ref) {
+  return TtsService();
 });
 
 final kanaRepositoryProvider = Provider<KanaRepository>((ref) {

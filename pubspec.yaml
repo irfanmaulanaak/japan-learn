@@ -27,6 +27,9 @@ dependencies:
   flutter_animate: ^4.5.0
   google_fonts: ^6.2.1
 
+  # On-device text-to-speech for kana / vocab / sentence audio
+  flutter_tts: ^4.2.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/kana.dart';
 import '../../data/models/kana_progress.dart';
+import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
 
-class KanaBrowseView extends StatelessWidget {
+class KanaBrowseView extends ConsumerWidget {
   final List<Kana> kana;
   final Map<int, KanaProgress> progress;
   const KanaBrowseView({
@@ -15,7 +18,7 @@ class KanaBrowseView extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
 
     return GridView.builder(
@@ -30,7 +33,13 @@ class KanaBrowseView extends StatelessWidget {
       itemBuilder: (context, index) {
         final item = kana[index];
         final state = item.id == null ? null : progress[item.id!];
-        return _KanaTile(item: item, progress: state, now: now)
+        return GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            ref.read(ttsServiceProvider).speak(item.character);
+          },
+          child: _KanaTile(item: item, progress: state, now: now),
+        )
             .animate(delay: (index * 8).ms)
             .fadeIn(duration: 220.ms)
             .scale(begin: const Offset(0.98, 0.98));

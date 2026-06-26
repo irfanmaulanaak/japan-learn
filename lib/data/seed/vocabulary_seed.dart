@@ -1,7 +1,9 @@
 import '../models/vocabulary.dart';
+import 'vocabulary_seed_extra.dart';
 
-// Core N5 vocabulary seed. Self-curated set of ~100 high-frequency words.
-const List<Vocabulary> vocabularySeedData = [
+// Core N5 vocabulary seed. `vocabularyBaseSeedData` is the original core set;
+// `vocabularySeedData` appends the extra N5 batch below.
+const List<Vocabulary> vocabularyBaseSeedData = [
   Vocabulary(
     word: '私',
     reading: 'わたし',
@@ -875,4 +877,10 @@ const List<Vocabulary> vocabularySeedData = [
     exampleJa: '犬を飼っています。',
     exampleEn: 'I have a dog.',
   ),
+];
+
+/// Full N5 vocabulary used on a fresh install: original core + extra batch.
+const List<Vocabulary> vocabularySeedData = [
+  ...vocabularyBaseSeedData,
+  ...vocabularyExtraSeedData,
 ];

@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/kana.dart';
 import '../../data/providers.dart';
+import '../../data/seed/grammar_seed.dart';
 import '../../theme/app_theme.dart';
+import '../grammar/grammar_screen.dart';
 import '../jlpt_mock/jlpt_mock_screen.dart';
 import '../kana/kana_module_screen.dart';
 import '../kanji/kanji_screen.dart';
@@ -80,6 +82,14 @@ class LearnScreen extends ConsumerWidget {
               title: 'Vocabulary',
               meta: '$vocab JLPT-graded words',
               onTap: () => _open(context, const VocabularyScreen()),
+            ),
+            const _Divider(),
+            _ModuleRow(
+              kanji: '文',
+              tint: AppColors.tintSky,
+              title: 'Grammar',
+              meta: '${grammarSeed.length} N5 patterns',
+              onTap: () => _open(context, const GrammarScreen()),
             ),
             const SizedBox(height: 28),
             const _SectionLabel('Practice'),

@@ -4,14 +4,16 @@ import 'package:sqflite/sqflite.dart';
 
 import '../seed/kana_seed.dart';
 import '../seed/kanji_seed.dart';
+import '../seed/kanji_seed_extra.dart';
 import '../seed/vocabulary_seed.dart';
+import '../seed/vocabulary_seed_extra.dart';
 
 class DatabaseHelper {
   DatabaseHelper._();
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const _dbName = 'japan_learn.db';
-  static const _dbVersion = 6;
+  static const _dbVersion = 7;
 
   Database? _db;
 
@@ -67,6 +69,29 @@ class DatabaseHelper {
       await _createBookmarkTable(db);
       await _createBadgeTable(db);
     }
+    if (oldVersion < 7) {
+      // Append extended kana (dakuten/handakuten/yoon) + extra N5 vocab/kanji.
+      // Inserts only the new rows so existing ids and SRS progress survive.
+      await _seedRows(db, 'kana', kanaExtendedSeedData.map((k) => k.toMap()));
+      await _seedRows(
+        db,
+        'vocabulary',
+        vocabularyExtraSeedData.map((v) => v.toMap()),
+      );
+      await _seedRows(db, 'kanji', kanjiExtraSeedData.map((k) => k.toMap()));
+    }
+  }
+
+  Future<void> _seedRows(
+    Database db,
+    String table,
+    Iterable<Map<String, Object?>> rows,
+  ) async {
+    final batch = db.batch();
+    for (final row in rows) {
+      batch.insert(table, row);
+    }
+    await batch.commit(noResult: true);
   }
 
   Future<void> _createUserGoalTable(Database db) async {

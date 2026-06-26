@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../data/models/kana.dart';
 import '../../data/models/kana_progress.dart';
+import '../../shared/speak_button.dart';
 import '../../theme/app_theme.dart';
 
 class KanaFlashcardView extends StatefulWidget {
@@ -87,7 +88,9 @@ class _KanaFlashcardViewState extends State<KanaFlashcardView> {
             ),
           ),
         ).animate().fadeIn(duration: 260.ms).slideY(begin: 0.03, end: 0),
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
+        Center(child: SpeakButton(text: item.character, size: 26)),
+        const SizedBox(height: 14),
         if (_revealed)
           Row(
             children: [

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../data/models/card_progress.dart';
+import '../../shared/speak_button.dart';
 import '../../theme/app_theme.dart';
 import 'deck_card.dart';
 
@@ -100,6 +101,8 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
                     ),
                   ),
                 ],
+                const SizedBox(height: 12),
+                SpeakButton(text: item.front, size: 22),
                 const SizedBox(height: 18),
                 Text(
                   _revealed ? item.back : 'tap to reveal',
@@ -122,13 +125,26 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          item.exampleJa!,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.ink,
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.exampleJa!,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            SpeakButton(
+                              text: item.exampleJa!,
+                              size: 18,
+                              background: AppColors.surface,
+                            ),
+                          ],
                         ),
                         if ((item.exampleEn ?? '').isNotEmpty) ...[
                           const SizedBox(height: 4),

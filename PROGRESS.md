@@ -5,6 +5,8 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 ## Status
 **Phases 1–3 wired end-to-end.** All modules from `PLAN.md` are playable with seeded N5 content. Phase 4 ships an entry-point only (Anki import scaffolded, cloud sync intentionally deferred to honour the offline-first architecture).
 
+**P0 learning pass (latest):** added on-device TTS audio across kana / vocab / kanji / shadowing / grammar; expanded kana with dakuten + handakuten + yoon; grew content to ~173 N5 vocab and ~103 N5 kanji; added a Grammar module (20 explained N5 patterns with audio examples); capped onboarding to N5 (N4–N1 marked "soon"). DB schema bumped to v7 (additive re-seed preserves existing SRS progress).
+
 ## Done
 
 ### Foundation
@@ -19,7 +21,8 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] Generic SM-2 engine `lib/data/srs/sm2.dart` reused by kana, vocab and kanji decks
 - [x] Models: `Kana`, `KanaProgress`, `UserGoal` (+ `AdaptiveDailyPlan`), `UserProgress`, `Vocabulary`, `Kanji`, `CardProgress`, `Bookmark`, `EarnedBadge` / `BadgeCatalog`
 - [x] Repositories: kana, kana_progress, vocabulary, kanji, card_progress, bookmark, badge, user_goal, user_progress
-- [x] Seeds bundled in APK: 46 hiragana, 46 katakana, ~100 N5 vocab, ~80 N5 kanji, 4 graded reading passages, 10 JLPT mock questions
+- [x] Seeds bundled in APK: full hiragana + katakana (base + dakuten/handakuten/yoon), ~173 N5 vocab, ~103 N5 kanji, 20 N5 grammar points, 4 graded reading passages, 10 JLPT mock questions
+- [x] On-device TTS (`flutter_tts`) via `TtsService` / `ttsServiceProvider`; `SpeakButton` drops audio into kana flashcards, kana browse (tap a tile), vocab/kanji flashcards (+ example sentences), shadowing lines, and grammar examples
 - [x] `LessonRecorder` service consolidates XP / streak / modules-done / badge evaluation in one place
 - [x] `reviewDueCountProvider` aggregates due cards across hiragana + katakana + vocab + kanji
 
@@ -111,10 +114,10 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - Stroke-order animation for kanji: kanji module exposes radical decomposition; animated stroke order is intentionally out of scope (no animation library bundled).
 - Cross-device cloud sync: intentionally **cancelled** — `PLAN.md` mandates an offline-first architecture, sync would require a backend.
 - Japanese font: still OS fallback. Bundling Zen Kaku Gothic / Noto Sans JP can land any time without code changes (just add asset + declare in `pubspec.yaml`).
-- Audio: no MP3s ship for the kana / vocab. Shadowing leans on the user reading aloud.
+- Audio: now on-device TTS (`ja-JP`, slowed rate). Pre-recorded native MP3s per item are still a nicer-quality follow-up but no longer blocking.
 
 ## Open questions (still relevant)
-- Audio: ship MP3 assets per kana / shadowing line, or wire on-device TTS?
+- Higher JLPT levels (N4–N1): onboarding locks them until content exists. Need vocab/kanji/grammar sets per level before unlocking.
 - "Modules done" currently counts hiragana + katakana mastery and ≥10 vocab / ≥5 kanji mastered; revisit thresholds once real learners use it.
 
 ## File map

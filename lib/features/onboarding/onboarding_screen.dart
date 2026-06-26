@@ -17,10 +17,10 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   static const _targetLevels = [
     OnboardingChoice('N5', 'First JLPT goal'),
-    OnboardingChoice('N4', 'Upper beginner'),
-    OnboardingChoice('N3', 'Lower intermediate'),
-    OnboardingChoice('N2', 'Advanced workhorse'),
-    OnboardingChoice('N1', 'Full fluency track'),
+    OnboardingChoice('N4', 'Upper beginner', enabled: false),
+    OnboardingChoice('N3', 'Lower intermediate', enabled: false),
+    OnboardingChoice('N2', 'Advanced workhorse', enabled: false),
+    OnboardingChoice('N1', 'Full fluency track', enabled: false),
   ];
 
   static const _timelines = [
@@ -165,7 +165,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       case 1:
         return OnboardingQuestionStep(
           title: 'Target JLPT level',
-          subtitle: 'Choose the level this plan should aim for.',
+          subtitle: 'N5 is ready now. Higher levels are coming soon.',
           child: OnboardingChoiceGroup(
             choices: _targetLevels,
             value: _targetLevel,

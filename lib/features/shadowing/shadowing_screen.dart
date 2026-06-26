@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/providers.dart';
+import '../../shared/speak_button.dart';
 import '../../theme/app_theme.dart';
 
-/// Shadowing practice. Record + playback compare is a stretch goal that
-/// needs native audio packages — we ship the practice UX (sentence reveal +
-/// self-rating) so users can drill speaking and earn XP, and leave audio
-/// recording as a follow-up plug-in point.
+/// Shadowing practice. Plays the line via on-device TTS so learners have
+/// native audio to mimic, then self-rate their attempt. Record + playback
+/// compare remains a follow-up plug-in point.
 class ShadowingScreen extends ConsumerStatefulWidget {
   const ShadowingScreen({super.key});
 
@@ -108,14 +108,23 @@ class _ShadowingScreenState extends ConsumerState<ShadowingScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 14),
-              const Text(
-                'Read it out loud. Match the rhythm. Repeat several times.',
-                style: TextStyle(
-                  color: AppColors.inkSoft,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  SpeakButton(text: line.ja, size: 24),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Tap to listen, then say it out loud. Match the rhythm '
+                      'and repeat several times.',
+                      style: TextStyle(
+                        color: AppColors.inkSoft,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const Spacer(),
               if (!_revealed)

@@ -1,8 +1,10 @@
 import '../models/kanji.dart';
+import 'kanji_seed_extra.dart';
 
-// N5 kanji set (~80 of the official ~103). Radicals are simplified labels
-// useful for grouping in the radical browser; not full Kangxi taxonomy.
-const List<Kanji> kanjiSeedData = [
+// N5 kanji set. Radicals are simplified labels useful for grouping in the
+// radical browser; not full Kangxi taxonomy. The original core lives in
+// `kanjiBaseSeedData`; `kanjiSeedData` appends the extra N5 set below.
+const List<Kanji> kanjiBaseSeedData = [
   Kanji(
     character: '一',
     meaning: 'one',
@@ -714,4 +716,10 @@ const List<Kanji> kanjiSeedData = [
     strokes: 7,
     level: 'N5',
   ),
+];
+
+/// Full N5 kanji set used on a fresh install: original core + extra.
+const List<Kanji> kanjiSeedData = [
+  ...kanjiBaseSeedData,
+  ...kanjiExtraSeedData,
 ];

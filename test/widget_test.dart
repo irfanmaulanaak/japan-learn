@@ -48,7 +48,7 @@ void main() {
     await tester.tap(find.text('Start setup'));
     await tester.pump(const Duration(milliseconds: 260));
 
-    await tester.tap(find.text('N4'));
+    await tester.tap(find.text('N5'));
     await tester.tap(find.text('Continue'));
     await tester.pump(const Duration(milliseconds: 260));
 
@@ -62,7 +62,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pump();
 
-    expect(repo.goal?.targetLevel, 'N4');
+    expect(repo.goal?.targetLevel, 'N5');
     expect(repo.goal?.timelineMonths, 6);
     expect(repo.goal?.startingPoint, 'Know hiragana');
     expect(find.text('おかえり。'), findsOneWidget);
