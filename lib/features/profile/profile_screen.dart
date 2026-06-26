@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/models/badge.dart';
+import '../../data/models/user_progress.dart';
 import '../../data/providers.dart';
 import '../../theme/app_theme.dart';
 import '../anki/anki_import_screen.dart';
@@ -18,57 +19,83 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('You')),
       body: progressAsync.when(
-        data: (progress) => badgesAsync.when(
-          data: (earned) => ListView(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
-            children: [
-              _LevelCard(xp: progress.xp, level: progress.level),
-              const SizedBox(height: 28),
-              _Row(label: 'Streak', value: '${progress.streakCount} days'),
-              _Row(label: 'XP', value: '${progress.xp}'),
-              _Row(label: 'Day in plan', value: '${progress.dayNumber}'),
-              _Row(
-                label: 'Modules done',
-                value: '${progress.modulesDone}/${progress.modulesTotal}',
-              ),
-              const SizedBox(height: 28),
-              const _SectionLabel('Badges'),
-              const SizedBox(height: 12),
-              _BadgeGrid(earned: earned),
-              const SizedBox(height: 28),
-              const _SectionLabel('Tools'),
-              const SizedBox(height: 8),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.upload_file_rounded,
-                  color: AppColors.ink,
-                ),
-                title: const Text(
-                  'Import Anki deck',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.ink,
+        data:
+            (progress) => badgesAsync.when(
+              data:
+                  (earned) => ListView(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
+                    children: [
+                      _LevelCard(xp: progress.xp, level: progress.level),
+                      const SizedBox(height: 28),
+                      _Row(
+                        label: 'Streak',
+                        value: '${progress.streakCount} days',
+                      ),
+                      _Row(
+                        label: 'Streak freezes',
+                        value:
+                            '${progress.freezeTokens} / ${UserProgress.maxFreezeTokens}',
+                      ),
+                      _Row(label: 'XP', value: '${progress.xp}'),
+                      _Row(
+                        label: 'Day in plan',
+                        value: '${progress.dayNumber}',
+                      ),
+                      _Row(
+                        label: 'Modules done',
+                        value:
+                            '${progress.modulesDone}/${progress.modulesTotal}',
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'A streak freeze auto-covers one missed day. Earn one for '
+                        'every 5-day streak (max 2).',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.inkMuted,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      const _SectionLabel('Badges'),
+                      const SizedBox(height: 12),
+                      _BadgeGrid(earned: earned),
+                      const SizedBox(height: 28),
+                      const _SectionLabel('Tools'),
+                      const SizedBox(height: 8),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(
+                          Icons.upload_file_rounded,
+                          color: AppColors.ink,
+                        ),
+                        title: const Text(
+                          'Import Anki deck',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.ink,
+                          ),
+                        ),
+                        subtitle: const Text(
+                          'Bring .apkg cards into your SRS.',
+                          style: TextStyle(
+                            color: AppColors.inkMuted,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onTap:
+                            () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const AnkiImportScreen(),
+                              ),
+                            ),
+                      ),
+                    ],
                   ),
-                ),
-                subtitle: const Text(
-                  'Bring .apkg cards into your SRS.',
-                  style: TextStyle(
-                    color: AppColors.inkMuted,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const AnkiImportScreen(),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          loading: () => const _Loading(),
-          error: (e, _) => _Err(error: e),
-        ),
+              loading: () => const _Loading(),
+              error: (e, _) => _Err(error: e),
+            ),
         loading: () => const _Loading(),
         error: (e, _) => _Err(error: e),
       ),
@@ -79,9 +106,8 @@ class ProfileScreen extends ConsumerWidget {
 class _Loading extends StatelessWidget {
   const _Loading();
   @override
-  Widget build(BuildContext context) => const Center(
-    child: CircularProgressIndicator(color: AppColors.accent),
-  );
+  Widget build(BuildContext context) =>
+      const Center(child: CircularProgressIndicator(color: AppColors.accent));
 }
 
 class _Err extends StatelessWidget {
@@ -92,10 +118,7 @@ class _Err extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Text(
-          '$error',
-          style: const TextStyle(color: AppColors.danger),
-        ),
+        child: Text('$error', style: const TextStyle(color: AppColors.danger)),
       ),
     );
   }
@@ -149,16 +172,18 @@ class _LevelCard extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.25),
                 ),
                 LayoutBuilder(
-                  builder: (_, c) => TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0, end: progress),
-                    duration: const Duration(milliseconds: 900),
-                    curve: Curves.easeOutCubic,
-                    builder: (_, v, _) => Container(
-                      height: 8,
-                      width: c.maxWidth * v,
-                      color: Colors.white,
-                    ),
-                  ),
+                  builder:
+                      (_, c) => TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0, end: progress),
+                        duration: const Duration(milliseconds: 900),
+                        curve: Curves.easeOutCubic,
+                        builder:
+                            (_, v, _) => Container(
+                              height: 8,
+                              width: c.maxWidth * v,
+                              color: Colors.white,
+                            ),
+                      ),
                 ),
               ],
             ),
@@ -188,16 +213,20 @@ class _Row extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.inkSoft,
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.inkSoft,
+              ),
             ),
           ),
+          const SizedBox(width: 12),
           Text(
             value,
             style: const TextStyle(
@@ -240,14 +269,15 @@ class _BadgeGrid extends StatelessWidget {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
-      children: BadgeCatalog.items
-          .map(
-            (b) => SizedBox(
-              width: (MediaQuery.of(context).size.width - 60) / 2,
-              child: _BadgeTile(badge: b, earned: earned.contains(b.code)),
-            ),
-          )
-          .toList(),
+      children:
+          BadgeCatalog.items
+              .map(
+                (b) => SizedBox(
+                  width: (MediaQuery.of(context).size.width - 60) / 2,
+                  child: _BadgeTile(badge: b, earned: earned.contains(b.code)),
+                ),
+              )
+              .toList(),
     );
   }
 }

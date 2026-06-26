@@ -26,6 +26,16 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
   int _index = 0;
   bool _revealed = false;
   bool _saving = false;
+  bool _reverse =
+      false; // false: JP → meaning (recognise); true: meaning → JP (recall)
+
+  void _setReverse(bool value) {
+    if (_reverse == value) return;
+    setState(() {
+      _reverse = value;
+      _revealed = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +57,8 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
 
     final deck = _deck();
     final item = deck[_index % deck.length];
+    final prompt = _reverse ? item.back : item.front;
+    final answer = _reverse ? item.front : item.back;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 32),
@@ -59,6 +71,22 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
             fontWeight: FontWeight.w800,
             letterSpacing: 1.2,
           ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _DirChip(
+              label: 'JP → EN',
+              selected: !_reverse,
+              onTap: () => _setReverse(false),
+            ),
+            const SizedBox(width: 8),
+            _DirChip(
+              label: 'EN → JP',
+              selected: _reverse,
+              onTap: () => _setReverse(true),
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         GestureDetector(
@@ -81,16 +109,18 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  item.front,
+                  prompt,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 56,
+                  style: TextStyle(
+                    fontSize: _reverse ? 30 : 56,
                     fontWeight: FontWeight.w800,
                     color: AppColors.ink,
-                    height: 1.1,
+                    height: 1.15,
                   ),
                 ),
-                if (item.subtitle != null) ...[
+                // Reading belongs with the Japanese word: show under the prompt
+                // only when the prompt IS the Japanese word (recognition mode).
+                if (!_reverse && item.subtitle != null) ...[
                   const SizedBox(height: 8),
                   Text(
                     item.subtitle!,
@@ -101,18 +131,49 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
                     ),
                   ),
                 ],
-                const SizedBox(height: 12),
-                SpeakButton(text: item.front, size: 22),
+                // In recall mode the Japanese word is the hidden answer, so keep
+                // the audio button hidden until reveal (it would give it away).
+                if (!_reverse) ...[
+                  const SizedBox(height: 12),
+                  SpeakButton(text: item.front, size: 22),
+                ],
                 const SizedBox(height: 18),
-                Text(
-                  _revealed ? item.back : 'tap to reveal',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: _revealed ? 22 : 14,
-                    fontWeight: FontWeight.w800,
-                    color: _revealed ? AppColors.accent : AppColors.inkMuted,
+                if (_revealed) ...[
+                  Text(
+                    answer,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: _reverse ? 40 : 22,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.accent,
+                      height: 1.15,
+                    ),
                   ),
-                ),
+                  if (_reverse && item.subtitle != null) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      item.subtitle!,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.inkSoft,
+                      ),
+                    ),
+                  ],
+                  if (_reverse) ...[
+                    const SizedBox(height: 10),
+                    SpeakButton(text: item.front, size: 22),
+                  ],
+                ] else
+                  const Text(
+                    'tap to reveal',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.inkMuted,
+                    ),
+                  ),
                 if (_revealed && item.exampleJa != null) ...[
                   const SizedBox(height: 14),
                   Container(
@@ -221,6 +282,44 @@ class _DeckFlashcardViewState extends State<DeckFlashcardView> {
       _revealed = false;
       _index = (_index + 1) % deckLength;
     });
+  }
+}
+
+class _DirChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _DirChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.accent : AppColors.surface,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.3,
+              color: selected ? Colors.white : AppColors.inkSoft,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

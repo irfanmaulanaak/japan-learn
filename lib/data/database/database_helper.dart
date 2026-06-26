@@ -13,7 +13,7 @@ class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._();
 
   static const _dbName = 'japan_learn.db';
-  static const _dbVersion = 7;
+  static const _dbVersion = 8;
 
   Database? _db;
 
@@ -80,6 +80,12 @@ class DatabaseHelper {
       );
       await _seedRows(db, 'kanji', kanjiExtraSeedData.map((k) => k.toMap()));
     }
+    if (oldVersion < 8) {
+      // Streak-freeze tokens. Default 0 keeps existing streak behaviour intact.
+      await db.execute(
+        'ALTER TABLE user_progress ADD COLUMN freeze_tokens INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   Future<void> _seedRows(
@@ -116,6 +122,7 @@ class DatabaseHelper {
         id INTEGER PRIMARY KEY,
         xp INTEGER NOT NULL,
         streak_count INTEGER NOT NULL,
+        freeze_tokens INTEGER NOT NULL DEFAULT 0,
         modules_done INTEGER NOT NULL,
         modules_total INTEGER NOT NULL,
         day_number INTEGER NOT NULL,
@@ -155,9 +162,7 @@ class DatabaseHelper {
         example_en TEXT
       )
     ''');
-    await db.execute(
-      'CREATE INDEX idx_vocabulary_level ON vocabulary(level)',
-    );
+    await db.execute('CREATE INDEX idx_vocabulary_level ON vocabulary(level)');
   }
 
   Future<void> _createKanjiTable(Database db) async {

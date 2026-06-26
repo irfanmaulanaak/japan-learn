@@ -9,6 +9,7 @@ import '../../theme/app_theme.dart';
 import 'kana_browse_view.dart';
 import 'kana_flashcard_view.dart';
 import 'kana_quiz_view.dart';
+import 'kana_recall_view.dart';
 
 class KanaModuleScreen extends ConsumerWidget {
   final String type; // Kana.typeHiragana or Kana.typeKatakana
@@ -30,11 +31,8 @@ class KanaModuleScreen extends ConsumerWidget {
         data:
             (kana) => progressAsync.when(
               data:
-                  (progress) => _Content(
-                    type: type,
-                    kana: kana,
-                    progress: progress,
-                  ),
+                  (progress) =>
+                      _Content(type: type, kana: kana, progress: progress),
               loading: () => const _LoadingState(),
               error: (error, _) => _ErrorState(error: error),
             ),
@@ -93,10 +91,12 @@ class _Content extends ConsumerWidget {
     }
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Column(
         children: [
           const TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             labelColor: AppColors.ink,
             unselectedLabelColor: AppColors.inkMuted,
             indicatorColor: AppColors.accent,
@@ -104,6 +104,7 @@ class _Content extends ConsumerWidget {
               Tab(text: 'Browse'),
               Tab(text: 'Flashcards'),
               Tab(text: 'Quiz'),
+              Tab(text: 'Recall'),
             ],
           ),
           Expanded(
@@ -116,6 +117,11 @@ class _Content extends ConsumerWidget {
                   onReview: recordReview,
                 ),
                 KanaQuizView(type: type, kana: kana, onReview: recordReview),
+                KanaRecallView(
+                  kana: kana,
+                  progress: progress,
+                  onReview: recordReview,
+                ),
               ],
             ),
           ),

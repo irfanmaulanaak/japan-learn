@@ -4,6 +4,7 @@ class UserProgress {
   final int id;
   final int xp;
   final int streakCount;
+  final int freezeTokens;
   final int modulesDone;
   final int modulesTotal;
   final int dayNumber;
@@ -16,6 +17,7 @@ class UserProgress {
     this.id = singleRowId,
     required this.xp,
     required this.streakCount,
+    this.freezeTokens = 0,
     required this.modulesDone,
     required this.modulesTotal,
     required this.dayNumber,
@@ -27,10 +29,18 @@ class UserProgress {
 
   static const int defaultModulesTotal = 6;
 
+  /// Most freezes a learner can stockpile. Keeps the safety net meaningful
+  /// without making streaks feel free.
+  static const int maxFreezeTokens = 2;
+
+  /// Earn one freeze each time the streak reaches a multiple of this.
+  static const int _freezeEarnEvery = 5;
+
   factory UserProgress.initial({required DateTime now}) {
     return UserProgress(
       xp: 0,
       streakCount: 0,
+      freezeTokens: 0,
       modulesDone: 0,
       modulesTotal: defaultModulesTotal,
       dayNumber: 1,
@@ -49,9 +59,32 @@ class UserProgress {
     final daysSinceLast = today.difference(lastDate).inDays;
 
     final newDay = daysSinceLast != 0;
-    final nextStreak = _nextStreak(daysSinceLast);
     final nextTodayDone = newDay ? 1 : todayDone + 1;
     final nextDayNumber = newDay ? dayNumber + daysSinceLast : dayNumber;
+
+    // Streak + freeze. A freeze silently absorbs exactly one missed day so a
+    // single slip doesn't wipe out a hard-won streak. Freezes are earned at
+    // streak milestones, capped, so they stay meaningful.
+    int nextStreak;
+    var nextFreeze = freezeTokens;
+    if (streakCount == 0) {
+      nextStreak = 1;
+    } else if (daysSinceLast == 0) {
+      nextStreak = streakCount;
+    } else if (daysSinceLast == 1) {
+      nextStreak = streakCount + 1;
+    } else if (daysSinceLast == 2 && freezeTokens > 0) {
+      nextStreak = streakCount + 1; // one missed day, covered by a freeze
+      nextFreeze = freezeTokens - 1;
+    } else {
+      nextStreak = 1; // multi-day gap, or no freeze to spend
+    }
+
+    if (newDay &&
+        nextStreak % _freezeEarnEvery == 0 &&
+        nextFreeze < maxFreezeTokens) {
+      nextFreeze += 1;
+    }
 
     final days = newDay ? _emptyWeek() : weekStudyDays;
     days[now.weekday - 1] = true;
@@ -60,6 +93,7 @@ class UserProgress {
       id: id,
       xp: xp + xpEarned,
       streakCount: nextStreak,
+      freezeTokens: nextFreeze,
       modulesDone: modulesDone,
       modulesTotal: modulesTotal,
       dayNumber: nextDayNumber,
@@ -74,6 +108,7 @@ class UserProgress {
     id: id,
     xp: xp,
     streakCount: streakCount,
+    freezeTokens: freezeTokens,
     modulesDone: modulesDone,
     modulesTotal: modulesTotal,
     dayNumber: dayNumber,
@@ -87,6 +122,7 @@ class UserProgress {
     id: id,
     xp: xp,
     streakCount: streakCount,
+    freezeTokens: freezeTokens,
     modulesDone: done.clamp(0, modulesTotal),
     modulesTotal: modulesTotal,
     dayNumber: dayNumber,
@@ -95,13 +131,6 @@ class UserProgress {
     weekMask: weekMask,
     updatedAt: updatedAt,
   );
-
-  int _nextStreak(int daysSinceLast) {
-    if (streakCount == 0) return 1;
-    if (daysSinceLast == 0) return streakCount;
-    if (daysSinceLast == 1) return streakCount + 1;
-    return 1;
-  }
 
   static DateTime _dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
@@ -118,6 +147,7 @@ class UserProgress {
     'id': id,
     'xp': xp,
     'streak_count': streakCount,
+    'freeze_tokens': freezeTokens,
     'modules_done': modulesDone,
     'modules_total': modulesTotal,
     'day_number': dayNumber,
@@ -131,6 +161,7 @@ class UserProgress {
     id: map['id'] as int,
     xp: map['xp'] as int,
     streakCount: map['streak_count'] as int,
+    freezeTokens: (map['freeze_tokens'] as int?) ?? 0,
     modulesDone: map['modules_done'] as int,
     modulesTotal: map['modules_total'] as int,
     dayNumber: map['day_number'] as int,

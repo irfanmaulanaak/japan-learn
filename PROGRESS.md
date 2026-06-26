@@ -5,7 +5,9 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 ## Status
 **Phases 1–3 wired end-to-end.** All modules from `PLAN.md` are playable with seeded N5 content. Phase 4 ships an entry-point only (Anki import scaffolded, cloud sync intentionally deferred to honour the offline-first architecture).
 
-**P0 learning pass (latest):** added on-device TTS audio across kana / vocab / kanji / shadowing / grammar; expanded kana with dakuten + handakuten + yoon; grew content to ~173 N5 vocab and ~103 N5 kanji; added a Grammar module (20 explained N5 patterns with audio examples); capped onboarding to N5 (N4–N1 marked "soon"). DB schema bumped to v7 (additive re-seed preserves existing SRS progress).
+**P0 learning pass:** added on-device TTS audio across kana / vocab / kanji / shadowing / grammar; expanded kana with dakuten + handakuten + yoon; grew content to ~173 N5 vocab and ~103 N5 kanji; added a Grammar module (20 explained N5 patterns with audio examples); capped onboarding to N5 (N4–N1 marked "soon"). DB schema bumped to v7 (additive re-seed preserves existing SRS progress).
+
+**P1 stickiness pass (latest):** added real *recall/production* practice — a typed-romaji "Recall" tab for kana (auto-graded, accepts common spellings) and a JP→EN / EN→JP direction toggle on vocab & kanji flashcards (recall the word from its meaning). Made kanji-by-radical real: a radical glossary (plain-English component meanings) + a tappable kanji detail screen (component breakdown, readings, and example words that use the kanji, all with audio) reachable from both the radical grid and the kanji browse list. Streak polish: streak freezes auto-cover one missed day (earned every 5-day streak, capped at 2) so a single slip no longer resets a long streak; shown on the profile. DB schema bumped to v8 (adds `freeze_tokens`, default 0 — existing streaks unaffected).
 
 ## Done
 
@@ -17,7 +19,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] `flutter analyze`, `flutter test`, `flutter build apk` (debug + release) all green
 
 ### Data layer
-- [x] SQLite helper at schema v6 (`lib/data/database/database_helper.dart`) — kana / user_goal / user_progress / kana_progress / vocabulary / kanji / card_progress / bookmark / badge
+- [x] SQLite helper at schema v8 (`lib/data/database/database_helper.dart`) — kana / user_goal / user_progress (+ `freeze_tokens`) / kana_progress / vocabulary / kanji / card_progress / bookmark / badge
 - [x] Generic SM-2 engine `lib/data/srs/sm2.dart` reused by kana, vocab and kanji decks
 - [x] Models: `Kana`, `KanaProgress`, `UserGoal` (+ `AdaptiveDailyPlan`), `UserProgress`, `Vocabulary`, `Kanji`, `CardProgress`, `Bookmark`, `EarnedBadge` / `BadgeCatalog`
 - [x] Repositories: kana, kana_progress, vocabulary, kanji, card_progress, bookmark, badge, user_goal, user_progress
@@ -48,22 +50,24 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - [x] Hairline-separated rows, spring-squish on tap
 
 ### Kana modules (hiragana + katakana)
-- [x] Browse all 46 in a grid, status tints per character (NEW / LEARN / DUE / OK)
+- [x] Browse all characters in a grid (tap to hear), status tints per character (NEW / LEARN / DUE / OK)
 - [x] Flashcard mode with reveal + Again/Know-it
 - [x] Quiz mode alternating kana → romaji and romaji → kana
+- [x] **Recall** mode — show the kana, type the romaji; auto-graded (accepts common spellings, e.g. shi/si, wo/o), feeds the same SRS
 - [x] Per-character SRS via `kana_progress`
-- [x] Single `KanaModuleScreen(type:)` parameterized for both scripts
+- [x] Single `KanaModuleScreen(type:)` parameterized for both scripts (4 tabs)
 
 ### Vocabulary module
 - [x] Browse list with per-card SRS status
-- [x] Flashcard mode shows reading + example sentence on reveal
+- [x] Flashcard mode shows reading + example sentence on reveal, with a JP→EN / EN→JP toggle (recall the word from its meaning, not just recognise it)
 - [x] Multi-choice quiz (front → meaning)
 - [x] Per-card SRS via `card_progress(deck: vocab)`
 
 ### Kanji module
-- [x] Browse list with on/kun + strokes/level
-- [x] Radicals tab groups kanji by component and lets you drill into each
-- [x] Flashcard mode
+- [x] Browse list with on/kun + strokes/level — tap a row to open the kanji detail
+- [x] Radicals tab groups kanji by component (each radical shows its plain-English meaning); tap any kanji to open its detail
+- [x] Kanji detail screen — big character + audio, meaning, on/kun, strokes/level, component breakdown (what each part means), and real example words that use the kanji (each with audio)
+- [x] Flashcard mode with JP→EN / EN→JP recall toggle
 - [x] Multi-choice quiz (kanji → meaning)
 - [x] Per-card SRS via `card_progress(deck: kanji)`
 
@@ -84,7 +88,8 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 ### Gamification
 - [x] 9 badges in `BadgeCatalog` (first review, hiragana/katakana mastered, streaks 3/7, XP 100/500, vocab/kanji counts)
 - [x] Snackbar toast when a badge is unlocked from any module
-- [x] Profile screen shows level card (`xp/100`), streak/day/modules stats, badge grid (locked/unlocked)
+- [x] Profile screen shows level card (`xp/100`), streak / streak-freezes / day / modules stats, badge grid (locked/unlocked)
+- [x] Streak freeze — auto-absorbs one missed day so a single slip doesn't reset the streak; earned every 5-day streak, capped at 2 (lives in `UserProgress`, persisted via `freeze_tokens`)
 - [x] Anki import entry point lives under Profile → Tools (parser still TODO)
 
 ### Onboarding
@@ -105,7 +110,7 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 ### Tests
 - [x] `sm2_test.dart` — interval growth, reset, mastery threshold
 - [x] `adaptive_plan_test.dart` — on-track / behind / ahead branches
-- [x] `user_progress_test.dart` — streak grow, skip-day reset, level-up
+- [x] `user_progress_test.dart` — streak grow, skip-day reset, level-up, freeze earn / absorb-one-day / can't-cover-two-day-gap
 - [x] `kana_progress_test.dart` — wraps SM-2 via kana progress
 - [x] `widget_test.dart` — boots onboarding, finishes flow, renders home
 
@@ -115,6 +120,8 @@ Track of what's built, what's mocked, what's next. Read `PLAN.md` for the spec; 
 - Cross-device cloud sync: intentionally **cancelled** — `PLAN.md` mandates an offline-first architecture, sync would require a backend.
 - Japanese font: still OS fallback. Bundling Zen Kaku Gothic / Noto Sans JP can land any time without code changes (just add asset + declare in `pubspec.yaml`).
 - Audio: now on-device TTS (`ja-JP`, slowed rate). Pre-recorded native MP3s per item are still a nicer-quality follow-up but no longer blocking.
+- Shadowing record-and-compare: the line now plays via TTS so learners have audio to mimic; recording the learner's voice + A/B playback is deferred (needs a mic-record package + runtime permission, low ROI for an internal app).
+- Kanji mnemonics: instead of authoring 100+ prose stories, the detail screen teaches via the radical/component breakdown (each part's meaning) — the WaniKani-style scaffold a mnemonic is built from.
 
 ## Open questions (still relevant)
 - Higher JLPT levels (N4–N1): onboarding locks them until content exists. Need vocab/kanji/grammar sets per level before unlocking.
@@ -126,21 +133,23 @@ lib/
 ├── main.dart
 ├── theme/app_theme.dart
 ├── shell/app_shell.dart
-├── shared/placeholder_screen.dart
+├── shared/{placeholder_screen, speak_button}.dart
 ├── data/
 │   ├── providers.dart
 │   ├── database/database_helper.dart
 │   ├── srs/sm2.dart
-│   ├── services/lesson_recorder.dart
+│   ├── radical_glossary.dart                 — radical → plain-English meaning
+│   ├── services/{lesson_recorder, tts_service}.dart
 │   ├── models/{kana, kana_progress, user_goal, user_progress, vocabulary, kanji, card_progress, bookmark, badge}.dart
 │   ├── repositories/{kana, kana_progress, user_goal, user_progress, vocabulary, kanji, card_progress, bookmark, badge}_repository.dart
-│   └── seed/{kana_seed, vocabulary_seed, kanji_seed, reading_seed, quiz_seed}.dart
+│   └── seed/{kana_seed, vocabulary_seed(+_extra), kanji_seed(+_extra), grammar_seed, reading_seed, quiz_seed}.dart
 └── features/
     ├── home/home_screen.dart                — dashboard
-    ├── kana/{kana_module_screen, kana_browse_view, kana_flashcard_view, kana_quiz_view}.dart
+    ├── kana/{kana_module_screen, kana_browse_view, kana_flashcard_view, kana_quiz_view, kana_recall_view}.dart
     ├── card_deck/{deck_card, deck_browse_view, deck_flashcard_view, deck_quiz_view}.dart
     ├── vocabulary/vocabulary_screen.dart
-    ├── kanji/{kanji_screen, kanji_radicals_view}.dart
+    ├── kanji/{kanji_screen, kanji_radicals_view, kanji_detail_screen}.dart
+    ├── grammar/grammar_screen.dart
     ├── dictionary/dictionary_screen.dart
     ├── reading/reading_screen.dart
     ├── shadowing/shadowing_screen.dart

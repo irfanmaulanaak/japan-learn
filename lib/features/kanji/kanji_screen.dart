@@ -10,6 +10,7 @@ import '../card_deck/deck_browse_view.dart';
 import '../card_deck/deck_card.dart';
 import '../card_deck/deck_flashcard_view.dart';
 import '../card_deck/deck_quiz_view.dart';
+import 'kanji_detail_screen.dart';
 import 'kanji_radicals_view.dart';
 
 class KanjiScreen extends ConsumerWidget {
@@ -23,16 +24,19 @@ class KanjiScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Kanji')),
       body: kanjiAsync.when(
-        data: (kanji) => progressAsync.when(
-          data: (progress) => _Content(kanji: kanji, progress: progress),
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.accent),
-          ),
-          error: (error, _) => _Err(error: error),
-        ),
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.accent),
-        ),
+        data:
+            (kanji) => progressAsync.when(
+              data: (progress) => _Content(kanji: kanji, progress: progress),
+              loading:
+                  () => const Center(
+                    child: CircularProgressIndicator(color: AppColors.accent),
+                  ),
+              error: (error, _) => _Err(error: error),
+            ),
+        loading:
+            () => const Center(
+              child: CircularProgressIndicator(color: AppColors.accent),
+            ),
         error: (error, _) => _Err(error: error),
       ),
     );
@@ -46,21 +50,23 @@ class _Content extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cards = kanji
-        .where((k) => k.id != null)
-        .map(
-          (k) => DeckCard(
-            id: k.id!,
-            front: k.character,
-            back: k.meaning,
-            subtitle: _readingLine(k),
-            meta: '${k.strokes} strokes · ${k.level}',
-          ),
-        )
-        .toList();
+    final cards =
+        kanji
+            .where((k) => k.id != null)
+            .map(
+              (k) => DeckCard(
+                id: k.id!,
+                front: k.character,
+                back: k.meaning,
+                subtitle: _readingLine(k),
+                meta: '${k.strokes} strokes · ${k.level}',
+              ),
+            )
+            .toList();
 
     Future<void> review(DeckCard card, bool correct) async {
-      final current = progress[card.id] ??
+      final current =
+          progress[card.id] ??
           CardProgress.initial(
             deck: CardProgress.deckKanji,
             itemId: card.id,
@@ -113,7 +119,14 @@ class _Content extends ConsumerWidget {
                 DeckBrowseView(
                   cards: cards,
                   progress: progress,
-                  onTap: (_) {},
+                  onTap: (card) {
+                    final match = kanji.firstWhere((k) => k.id == card.id);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => KanjiDetailScreen(kanji: match),
+                      ),
+                    );
+                  },
                 ),
                 KanjiRadicalsView(kanji: kanji),
                 DeckFlashcardView(
